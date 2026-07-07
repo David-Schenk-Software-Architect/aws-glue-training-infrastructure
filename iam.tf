@@ -1,0 +1,132 @@
+# ── Glue service role ────────────────────────────────────────────────────────
+# Name starts with "AWSGlueServiceRole" (Notion requirement). Used by crawlers,
+# jobs AND interactive sessions across Ü3.1 / Ü4.1 / Ü5.1 / Ü6.1 / Ü7.1 / Ü8.x.
+# AWS-managed AWSGlueServiceRole covers glue:* (catalog) + CloudWatch logs on
+# /aws-glue/* + PassRole-to-Glue; the inline policy adds S3 on our bucket, whose
+# name is not aws-glue-* so it is not covered by the managed policy.
+
+data "aws_iam_policy_document" "glue_assume" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["glue.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "glue" {
+  name               = "AWSGlueServiceRole-GfuGlueTraining"
+  assume_role_policy = data.aws_iam_policy_document.glue_assume.json
+}
+
+resource "aws_iam_role_policy_attachment" "glue_managed" {
+  role       = aws_iam_role.glue.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
+}
+
+data "aws_iam_policy_document" "glue_inline" {
+  statement {
+    sid       = "BucketList"
+    actions   = ["s3:ListBucket", "s3:GetBucketLocation"]
+    resources = [aws_s3_bucket.lake.arn]
+  }
+
+  statement {
+    sid = "ObjectReadWrite"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
+    ]
+    resources = ["${aws_s3_bucket.lake.arn}/*"]
+  }
+
+  # Explicit catalog writes (also covered by the managed policy) so the role is
+  # self-documenting for the Data-Catalog-Update option in Ü5.1.
+  statement {
+    sid = "CatalogWrite"
+    actions = [
+      "glue:CreateTable",
+      "glue:UpdateTable",
+      "glue:GetTable",
+      "glue:GetTables",
+      "glue:GetDatabase",
+      "glue:GetDatabases",
+      "glue:BatchCreatePartition",
+      "glue:CreatePartition",
+      "glue:UpdatePartition",
+      "glue:GetPartition",
+      "glue:GetPartitions",
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "glue_inline" {
+  name   = "gfu-glue-s3-catalog"
+  role   = aws_iam_role.glue.id
+  policy = data.aws_iam_policy_document.glue_inline.json
+}
+
+# KMS grants for the Glue role, only when the optional CMK exists (Ü8.2).
+data "aws_iam_policy_document" "glue_kms" {
+  count = var.enable_kms ? 1 : 0
+
+  statement {
+    sid = "GlueKms"
+    actions = [
+      "kms:Decrypt",
+      "kms:Encrypt",
+      "kms:GenerateDataKey",
+      "kms:DescribeKey",
+    ]
+    resources = [aws_kms_key.glue[0].arn]
+  }
+}
+
+resource "aws_iam_role_policy" "glue_kms" {
+  count  = var.enable_kms ? 1 : 0
+  name   = "gfu-glue-kms"
+  role   = aws_iam_role.glue.id
+  policy = data.aws_iam_policy_document.glue_kms[0].json
+}
+
+# ── Step Functions execution role (Ü7.2) ────────────────────────────────────
+# Starts and monitors the participant-built Glue job via glue:startJobRun.sync.
+
+data "aws_iam_policy_document" "sfn_assume" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["states.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "step_functions" {
+  name               = "StepFunctionsGlueExecutionRole-GfuGlueTraining"
+  assume_role_policy = data.aws_iam_policy_document.sfn_assume.json
+}
+
+data "aws_iam_policy_document" "sfn_inline" {
+  statement {
+    sid = "GlueJobControl"
+    actions = [
+      "glue:StartJobRun",
+      "glue:GetJobRun",
+      "glue:GetJobRuns",
+      "glue:BatchStopJobRun",
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "sfn_inline" {
+  name   = "gfu-sfn-glue"
+  role   = aws_iam_role.step_functions.id
+  policy = data.aws_iam_policy_document.sfn_inline.json
+}

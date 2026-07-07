@@ -1,0 +1,6 @@
+cust id,order total,order date,status
+C001,129.90,2026-06-01,shipped
+C002,58.00,2026-06-01,"shipped, partial"
+C003,240.50,2026-06-02,cancelled
+C004,,2026-06-02,pending
+C005,79.99,2026-06-03,shipped

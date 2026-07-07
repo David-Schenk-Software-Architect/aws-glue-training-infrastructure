@@ -1,0 +1,3 @@
+{"customer_id":"C001","name":"Alice","address":{"city":"Berlin","zip":"10115"},"contacts":[{"type":"email","value":"alice@example.com"},{"type":"phone","value":"+49301234"}],"loyalty_points":1200}
+{"customer_id":"C002","name":"Bob","address":{"city":"Hamburg","zip":"20095"},"contacts":[{"type":"email","value":"bob@example.com"}],"loyalty_points":"gold"}
+{"customer_id":"C003","name":"Carol","address":{"city":"München","zip":"80331"},"contacts":[],"loyalty_points":800}
