@@ -21,3 +21,9 @@ variable "enable_dynamodb" {
   type        = bool
   default     = true
 }
+
+variable "trainee_usernames" {
+  description = "Generic, non-PII logins for the training attendees — one IAM user per entry. Deliberately no real names to keep PII out of the IaC. Add entries to scale to N attendees."
+  type        = set(string)
+  default     = ["gfu-glue-trainee"]
+}

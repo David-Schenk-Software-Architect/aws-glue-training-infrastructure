@@ -20,6 +20,7 @@ from the caller's credentials / repo secrets at deploy time.
 | Glue Catalog DBs `raw`, `processed` | catalog targets | Ü3.1, Ü5.1 |
 | KMS CMK *(optional, `enable_kms`, default off)* | Security Configuration | Ü8.2 |
 | DynamoDB table *(optional, `enable_dynamodb`, default on)* | Block 9 second target | Block 9 |
+| IAM users (`trainee_usernames`, default 1) | attendee console + CLI logins (broad perms) | all |
 
 **Deliberately NOT created** — the participant builds these live during the exercises:
 crawlers, the Glue job `orders-s3-to-parquet`, Glue Workflows, Step Functions state
@@ -105,13 +106,41 @@ per run/scan during the session; IAM, Catalog DBs and the Step Functions role ar
 DynamoDB is on-demand. The only standing charge would be a KMS CMK (~1 USD/month) — hence
 `enable_kms` defaults to **off**.
 
+## Trainee access
+
+The stack provisions one IAM user **per attendee**, driven by the `trainee_usernames`
+variable (default a single `gfu-glue-trainee`; generic by design — no real names, so no
+PII in the IaC). Scale to N attendees by listing more names:
+
+```bash
+tofu apply -var 'trainee_usernames=["gfu-glue-trainee-1","gfu-glue-trainee-2"]'
+```
+
+Each user carries broad AWS-managed `*FullAccess` policies for Glue, S3, Athena, Step
+Functions, DynamoDB and CloudWatch Logs, plus `IAMReadOnlyAccess` and an explicit
+`iam:PassRole` on the Glue and Step Functions roles — enough to run every exercise,
+deliberately over-scoped for a throwaway sandbox.
+
+Fetch the credentials after apply (they live only in the encrypted remote state, never in
+this repo). Outputs are maps keyed by username:
+
+```bash
+tofu output      trainee_console_url          # shared sign-in URL
+tofu output -json trainee_usernames           # ["gfu-glue-trainee"]
+tofu output -json trainee_passwords           # {username: initial password (reset forced)}
+tofu output -json trainee_access_key_ids      # {username: CLI access key id}
+tofu output -json trainee_secret_access_keys  # {username: CLI secret}
+```
+
+The users are torn down with the stack (`tofu destroy`), so the logins and keys disappear
+after the training. Rotate/destroy promptly once the session is over.
+
 ## Manual note — console identity
 
 The console user the participant logs in as needs `iam:PassRole` on the Glue role plus
 `glue` interactive-session / notebook permissions to run Ü4.1 / Ü6.1 and to pass the role
-to jobs. In a sandbox where that user is admin this is already covered — flagged here so
-it is not a surprise. This is a property of the *caller* identity, not of the provisioned
-role, so it is intentionally out of this stack.
+to jobs — the provisioned `gfu-glue-trainee` user above already covers this. Flagged here
+so it is not a surprise if a different caller identity is used instead.
 
 ## Open item
 
