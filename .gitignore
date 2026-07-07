@@ -3,7 +3,7 @@
 
 # OpenTofu / Terraform
 .terraform/
-.terraform.lock.hcl
+# .terraform.lock.hcl is committed on purpose (pinned provider hashes for reproducible CI)
 *.tfstate
 *.tfstate.*
 crash.log

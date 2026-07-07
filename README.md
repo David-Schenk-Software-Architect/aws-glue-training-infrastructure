@@ -24,18 +24,53 @@ Account `REDACTED`, region `eu-central-1`.
 crawlers, the Glue job `orders-s3-to-parquet`, Glue Workflows, Step Functions state
 machines, Security Configurations, interactive sessions.
 
-## Usage
+## Deployment (CI/CD)
 
-Credentials come from `.env` (git-ignored). Export them, then run OpenTofu:
+Deploys run through **GitHub Actions** (`.github/workflows/deploy.yml`):
+
+- **Push to `main`** → `init → fmt → validate → plan → apply` (full deploy).
+- **Pull request to `main`** → same, but stops after `plan` (review gate, no apply).
+- A guard step aborts if the runner's AWS account ≠ the expected one.
+
+State lives in a remote **S3 backend** (`gfu-glue-training-tfstate-REDACTED`,
+native S3 locking) so every run is idempotent. Auth comes from repo **secrets**
+`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_ACCOUNT_ID` and the repo
+**variable** `AWS_DEFAULT_REGION`.
+
+The **first push to `main` performs the initial apply** — no manual first-apply needed.
+Watch it with `gh run watch`.
+
+### One-time state-bucket bootstrap
+
+The backend bucket must exist before the first `tofu init`. Run once (with `.env` creds):
+
+```bash
+set -a; source .env; set +a
+B=gfu-glue-training-tfstate-REDACTED
+aws s3api create-bucket --bucket "$B" --region eu-central-1 \
+  --create-bucket-configuration LocationConstraint=eu-central-1
+aws s3api put-bucket-versioning --bucket "$B" \
+  --versioning-configuration Status=Enabled
+aws s3api put-bucket-encryption --bucket "$B" \
+  --server-side-encryption-configuration \
+  '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"},"BucketKeyEnabled":true}]}'
+aws s3api put-public-access-block --bucket "$B" \
+  --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+```
+
+## Local usage
+
+Credentials come from `.env` (git-ignored). Export them, then run OpenTofu against the
+same remote state:
 
 ```bash
 set -a; source .env; set +a      # AWS_ACCESS_KEY_ID / SECRET / DEFAULT_REGION
 
-tofu init
+tofu init                        # initialises the S3 backend
 tofu fmt -check
 tofu validate
 tofu plan
-tofu apply
+tofu apply                       # prefer letting CI apply; local apply shares the same state
 ```
 
 Optional toggles:

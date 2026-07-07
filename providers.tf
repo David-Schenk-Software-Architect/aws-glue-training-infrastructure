@@ -7,6 +7,17 @@ terraform {
       version = "~> 5.60"
     }
   }
+
+  # Remote state so the CI pipeline is idempotent across runs. Native S3 locking
+  # (use_lockfile) avoids a DynamoDB lock table. The bucket is bootstrapped once
+  # outside this stack (see README) — it cannot store its own creation state.
+  backend "s3" {
+    bucket       = "gfu-glue-training-tfstate-REDACTED"
+    key          = "infra/terraform.tfstate"
+    region       = "eu-central-1"
+    encrypt      = true
+    use_lockfile = true
+  }
 }
 
 provider "aws" {
