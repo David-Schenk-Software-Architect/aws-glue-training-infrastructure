@@ -5,7 +5,8 @@ OpenTofu stack that pre-provisions the AWS resources the hands-on exercises of t
 Voraussetzungen — vorab bereitstellen"* sections). Training time then stays on Glue
 itself, not on plumbing.
 
-Account `REDACTED`, region `eu-central-1`.
+Region `eu-central-1`. The target account id is not hard-coded in this repo — it comes
+from the caller's credentials / repo secrets at deploy time.
 
 ## What this creates
 
@@ -32,21 +33,23 @@ Deploys run through **GitHub Actions** (`.github/workflows/deploy.yml`):
 - **Pull request to `main`** → same, but stops after `plan` (review gate, no apply).
 - A guard step aborts if the runner's AWS account ≠ the expected one.
 
-State lives in a remote **S3 backend** (`gfu-glue-training-tfstate-REDACTED`,
-native S3 locking) so every run is idempotent. Auth comes from repo **secrets**
-`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_ACCOUNT_ID` and the repo
-**variable** `AWS_DEFAULT_REGION`.
+State lives in a remote **S3 backend** (native S3 locking) so every run is idempotent.
+The state-bucket name embeds the account id, so it is **not** committed here — it is
+supplied at `init` time via `-backend-config="bucket=..."`. Auth + config come from repo
+**secrets** `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_ACCOUNT_ID` /
+`TF_STATE_BUCKET` and the repo **variable** `AWS_DEFAULT_REGION`.
 
 The **first push to `main` performs the initial apply** — no manual first-apply needed.
 Watch it with `gh run watch`.
 
 ### One-time state-bucket bootstrap
 
-The backend bucket must exist before the first `tofu init`. Run once (with `.env` creds):
+The backend bucket must exist before the first `tofu init`. Run once (with `.env` creds).
+The bucket name is derived from the current account id, so nothing sensitive is hard-coded:
 
 ```bash
 set -a; source .env; set +a
-B=gfu-glue-training-tfstate-REDACTED
+B="gfu-glue-training-tfstate-$(aws sts get-caller-identity --query Account --output text)"
 aws s3api create-bucket --bucket "$B" --region eu-central-1 \
   --create-bucket-configuration LocationConstraint=eu-central-1
 aws s3api put-bucket-versioning --bucket "$B" \
@@ -65,8 +68,9 @@ same remote state:
 
 ```bash
 set -a; source .env; set +a      # AWS_ACCESS_KEY_ID / SECRET / DEFAULT_REGION
+export TF_STATE_BUCKET="gfu-glue-training-tfstate-$(aws sts get-caller-identity --query Account --output text)"
 
-tofu init                        # initialises the S3 backend
+tofu init -backend-config="bucket=$TF_STATE_BUCKET"   # initialises the S3 backend
 tofu fmt -check
 tofu validate
 tofu plan

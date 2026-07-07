@@ -45,7 +45,7 @@ jobs:
           echo "Deploying to account $ACTUAL"
 
       - name: Tofu init
-        run: tofu init -input=false
+        run: tofu init -input=false -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}"
 
       - name: Tofu fmt check
         run: tofu fmt -check -recursive
