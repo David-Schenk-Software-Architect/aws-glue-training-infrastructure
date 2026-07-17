@@ -14,6 +14,7 @@ from the caller's credentials / repo secrets at deploy time.
 |---|---|---|
 | S3 bucket `gfu-glue-training-<account>` | `raw/ processed/ temp/ athena-results/ seed/` | all |
 | Seed data | `raw/orders/orders.csv`, `raw/customers/customers.json`, `seed/orders_2.csv` | Ü3.1, Ü6.1, Ü8.1 |
+| Reference scripts | `solutions/**/*.py` staged to `scripts/` (path mirrored) | Ü5.1, Ü8.1, Ü9.A |
 | IAM role `AWSGlueServiceRole-GfuGlueTraining` | crawlers, jobs, interactive sessions | Ü3.1–Ü8.x |
 | IAM role `StepFunctionsGlueExecutionRole-GfuGlueTraining` | Step Functions → Glue | Ü7.2 |
 | Athena workgroup `gfu-glue-training` | query-result location set | Ü3.1, Ü5.1 |
@@ -31,9 +32,14 @@ machines, Security Configurations, interactive sessions.
 `solutions/` holds **compare-after-exercise** reference code — a starter/example and a
 worked solution per in-scope exercise (Glue job scripts, interactive-session notebooks,
 a Step Functions ASL definition, and the Ü9.A debugging challenge). It is
-**not Terraform-managed**: no `.tf` resource references it and CI never deploys it. The
-scripts target the same bucket, roles and catalog DBs this stack creates. See
+the scripts target the same bucket, roles and catalog DBs this stack creates. See
 [`solutions/README.md`](solutions/README.md).
+
+The notebooks and the Step Functions ASL stay git-only (they are not S3 job scripts). The
+PySpark **`.py` scripts**, however, are staged to `scripts/` in the data-lake bucket (path
+mirrored, e.g. `scripts/ue5.1-orders-to-parquet-job/solution_orders_to_parquet.py`) so a
+Glue job can reference them directly — `tofu output s3_paths` → `scripts`. Only the script
+*files* are staged; the Glue jobs are still built live.
 
 ## Deployment (CI/CD)
 

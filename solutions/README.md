@@ -29,10 +29,14 @@ gemäß Notion-Block wählen.
 
 ## In die Sandbox laden
 
-- **Job-Skript** (`.py`): Glue Studio → *Job* → *Script editor* → Skriptinhalt einfügen,
-  IAM-Rolle `AWSGlueServiceRole-GfuGlueTraining`, Glue 5.0, Job-Parameter setzen (siehe
-  Header jeder Datei). Alternativ Skript nach `s3://gfu-glue-training-<account>/scripts/`
-  legen und beim Job referenzieren.
+- **Job-Skript** (`.py`): alle `.py` aus diesem Verzeichnis werden vom Stack nach
+  `s3://gfu-glue-training-<account>/scripts/` gespiegelt (Pfad erhalten, z. B.
+  `scripts/ue5.1-orders-to-parquet-job/solution_orders_to_parquet.py`). Beim Job-Anlegen
+  in Glue Studio als Skript-Location referenzieren — oder Skriptinhalt in den *Script
+  editor* einfügen. IAM-Rolle `AWSGlueServiceRole-GfuGlueTraining`, Glue 5.0,
+  Job-Parameter setzen (siehe Header jeder Datei). `tofu output s3_paths` → `scripts`.
+  *Hinweis:* die Lösungsskripte liegen damit im selben Bucket, den der Teilnehmer sieht —
+  bei Debugging-Challenges (Ü9.A) ggf. erst nach der Übung aushändigen.
 - **Notebook** (`.ipynb`): Glue Studio → *Notebook* → *Upload notebook*. Die
   `%`-Magics in den ersten Zellen konfigurieren die Interactive Session (Rolle,
   Glue-Version, Worker). Alternativ Zellen in ein neues Session-Notebook kopieren.

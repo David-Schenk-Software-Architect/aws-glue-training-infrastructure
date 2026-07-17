@@ -69,3 +69,22 @@ resource "aws_s3_object" "orders_2_seed" {
   source = "${path.module}/data/orders_2.csv"
   etag   = filemd5("${path.module}/data/orders_2.csv")
 }
+
+# ── Reference Glue job scripts (Ü5.1, Ü8.1, Ü9.A) ────────────────────────────
+# Stages every PySpark script under solutions/ into scripts/ (path mirrored) so a
+# Glue job can point straight at it (create-job-from-script). This stages the
+# script FILES only — the Glue jobs themselves are still built live by the
+# participant (see "Deliberately NOT created"). Notebooks/ASL are not S3 job
+# scripts and stay git-only. Trade-off: solution scripts are then visible in the
+# same bucket the trainee browses — hand these out after the exercise if that
+# matters for the challenge (Ü9.A especially).
+
+resource "aws_s3_object" "reference_scripts" {
+  for_each = fileset("${path.module}/solutions", "**/*.py")
+
+  bucket       = aws_s3_bucket.lake.id
+  key          = "scripts/${each.value}"
+  source       = "${path.module}/solutions/${each.value}"
+  etag         = filemd5("${path.module}/solutions/${each.value}")
+  content_type = "text/x-python"
+}

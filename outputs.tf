@@ -9,6 +9,7 @@ output "s3_paths" {
     raw_orders     = "s3://${aws_s3_bucket.lake.bucket}/raw/orders/"
     raw_customers  = "s3://${aws_s3_bucket.lake.bucket}/raw/customers/"
     processed      = "s3://${aws_s3_bucket.lake.bucket}/processed/"
+    scripts        = "s3://${aws_s3_bucket.lake.bucket}/scripts/"
     temp           = "s3://${aws_s3_bucket.lake.bucket}/temp/"
     athena_results = "s3://${aws_s3_bucket.lake.bucket}/athena-results/"
     orders_2_seed  = "s3://${aws_s3_bucket.lake.bucket}/seed/orders_2.csv"
