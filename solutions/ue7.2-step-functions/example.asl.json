@@ -1,0 +1,14 @@
+{
+  "Comment": "Ue7.2 BEISPIEL/STARTER - startet orders-s3-to-parquet synchron, OHNE Fehlerbehandlung. TODO 1: Retry-Array auf ['Glue.ConcurrentRunsExceededException'] mit IntervalSeconds/MaxAttempts/BackoffRate ergaenzen. TODO 2: Catch-Array auf ['States.ALL'] -> Next: 'JobFailed' und einen Fail-State 'JobFailed' hinzufuegen. Experiment: '.sync' aus der Resource entfernen und beobachten, dass der Lauf sofort als erfolgreich gilt. Vergleich danach mit solution.asl.json.",
+  "StartAt": "RunGlueJob",
+  "States": {
+    "RunGlueJob": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "orders-s3-to-parquet"
+      },
+      "End": true
+    }
+  }
+}

@@ -26,6 +26,15 @@ from the caller's credentials / repo secrets at deploy time.
 crawlers, the Glue job `orders-s3-to-parquet`, Glue Workflows, Step Functions state
 machines, Security Configurations, interactive sessions.
 
+## Solutions / reference artifacts
+
+`solutions/` holds **compare-after-exercise** reference code — a starter/example and a
+worked solution per in-scope exercise (Glue job scripts, interactive-session notebooks,
+a Step Functions ASL definition, and the Ü9.A debugging challenge). It is
+**not Terraform-managed**: no `.tf` resource references it and CI never deploys it. The
+scripts target the same bucket, roles and catalog DBs this stack creates. See
+[`solutions/README.md`](solutions/README.md).
+
 ## Deployment (CI/CD)
 
 Deploys run through **GitHub Actions** (`.github/workflows/deploy.yml`):

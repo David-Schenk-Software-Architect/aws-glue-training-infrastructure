@@ -1,0 +1,36 @@
+{
+  "Comment": "Ue7.2 LOESUNG - startet den Glue-Job orders-s3-to-parquet synchron (.sync), mit Retry auf ConcurrentRunsExceededException und Catch->Fail. Ausfuehrungsrolle: StepFunctionsGlueExecutionRole-GfuGlueTraining.",
+  "StartAt": "RunGlueJob",
+  "States": {
+    "RunGlueJob": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "orders-s3-to-parquet"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": ["Glue.ConcurrentRunsExceededException"],
+          "IntervalSeconds": 15,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "JobFailed"
+        }
+      ],
+      "Next": "Done"
+    },
+    "JobFailed": {
+      "Type": "Fail",
+      "Error": "GlueJobFailed",
+      "Cause": "orders-s3-to-parquet ist fehlgeschlagen - siehe Glue-Run-Details / CloudWatch."
+    },
+    "Done": {
+      "Type": "Succeed"
+    }
+  }
+}

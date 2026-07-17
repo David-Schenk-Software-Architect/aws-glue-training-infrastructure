@@ -1,6 +1,10 @@
 # Secrets
 .env
 
+# Python (solutions/ reference scripts — bytecode caches only)
+__pycache__/
+*.pyc
+
 # OpenTofu / Terraform
 .terraform/
 # .terraform.lock.hcl is committed on purpose (pinned provider hashes for reproducible CI)
