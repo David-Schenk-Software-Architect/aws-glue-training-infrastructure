@@ -14,14 +14,16 @@ from the caller's credentials / repo secrets at deploy time.
 |---|---|---|
 | S3 bucket `gfu-glue-training-<account>` | `raw/ processed/ temp/ athena-results/ seed/` | all |
 | Seed data | `raw/orders/orders.csv`, `raw/customers/customers.json`, `seed/orders_2.csv` | Ü3.1, Ü6.1, Ü8.1 |
-| Reference scripts | `solutions/**/*.py` staged to `scripts/` (path mirrored) | Ü5.1, Ü8.1, Ü9.A |
+| Reference artifacts | `solutions/**` staged to `scripts/examples/` (trainee-readable) and `scripts/solutions/` (trainee-hidden) | Ü4.1, Ü5.1, Ü6.1, Ü7.2, Ü8.1, Ü9.A |
+| Trainee workspaces | `scripts/<username>/{notebooks,scripts}/` per trainee (read+write) | all |
+| Reference Glue jobs + state machine *(`enable_reference_jobs`, default on)* | `ref-…-solution` jobs + `ref-orders-pipeline-solution` state machine | Ü5.1, Ü7.2, Ü8.1, Ü9.A |
 | IAM role `AWSGlueServiceRole-GfuGlueTraining` | crawlers, jobs, interactive sessions | Ü3.1–Ü8.x |
 | IAM role `StepFunctionsGlueExecutionRole-GfuGlueTraining` | Step Functions → Glue | Ü7.2 |
 | Athena workgroup `gfu-glue-training` | query-result location set | Ü3.1, Ü5.1 |
 | Glue Catalog DBs `raw`, `processed` | catalog targets | Ü3.1, Ü5.1 |
 | KMS CMK *(optional, `enable_kms`, default off)* | Security Configuration | Ü8.2 |
 | DynamoDB table *(optional, `enable_dynamodb`, default on)* | Block 9 second target | Block 9 |
-| IAM users (`trainee_usernames`, default 1) | attendee console + CLI logins (broad perms) | all |
+| IAM users (`trainee_usernames`, default 1) | attendee console + CLI logins (scoped S3, broad Glue/Athena) | all |
 
 **Deliberately NOT created** — the participant builds these live during the exercises:
 crawlers, the Glue job `orders-s3-to-parquet`, Glue Workflows, Step Functions state
@@ -31,15 +33,29 @@ machines, Security Configurations, interactive sessions.
 
 `solutions/` holds **compare-after-exercise** reference code — a starter/example and a
 worked solution per in-scope exercise (Glue job scripts, interactive-session notebooks,
-a Step Functions ASL definition, and the Ü9.A debugging challenge). It is
-the scripts target the same bucket, roles and catalog DBs this stack creates. See
+a Step Functions ASL definition, and the Ü9.A debugging challenge). The scripts target the
+same bucket, roles and catalog DBs this stack creates. See
 [`solutions/README.md`](solutions/README.md).
 
-The notebooks and the Step Functions ASL stay git-only (they are not S3 job scripts). The
-PySpark **`.py` scripts**, however, are staged to `scripts/` in the data-lake bucket (path
-mirrored, e.g. `scripts/ue5.1-orders-to-parquet-job/solution_orders_to_parquet.py`) so a
-Glue job can reference them directly — `tofu output s3_paths` → `scripts`. Only the script
-*files* are staged; the Glue jobs are still built live.
+**Everything is staged to S3** under `scripts/`, split into two sibling prefixes:
+
+- `scripts/examples/…` — the starters (`example*`, `broken/`). **Trainee-readable.**
+- `scripts/solutions/…` — the worked solutions (`solution*`, `fixed/`). **Hidden from
+  trainees** by the scoped S3 policy (`aws_iam_policy.trainee_bucket`), which is an
+  *allow-list* — `scripts/solutions/` is simply never granted, so it never appears in a
+  trainee's listing. There is deliberately **no explicit `Deny`**.
+
+Each trainee also gets a workspace `scripts/<username>/{notebooks,scripts}/` (read+write;
+all trainees can see all workspaces). Trainee S3 access is scoped (no `AmazonS3FullAccess`)
+to the data prefixes + examples + trainee workspaces; Glue/Athena/Step-Functions access
+stays broad.
+
+**`enable_reference_jobs`** (default **on**) registers the solution scripts as runnable
+Glue jobs (`ref-…-solution`) and the solution ASL as a state machine
+(`ref-orders-pipeline-solution`, whose `JobName` targets the `ref-…` job, not the
+live-built `orders-s3-to-parquet`). While on, those jobs are visible in every trainee's
+Glue console — set it to `false` to keep the reference jobs out of the sandbox during
+teaching (esp. the Ü9.A challenge).
 
 ## Deployment (CI/CD)
 

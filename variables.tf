@@ -27,3 +27,9 @@ variable "trainee_usernames" {
   type        = set(string)
   default     = ["gfu-glue-trainee"]
 }
+
+variable "enable_reference_jobs" {
+  description = "Register the SOLUTION scripts as real Glue jobs and the solution ASL as a Step Functions state machine (instructor reference deployment). ON by default. Reference resources use 'ref-…-solution' names to avoid colliding with the trainee-built 'orders-s3-to-parquet'. NOTE: the ref Glue jobs are visible in every trainee's Glue console (AWSGlueConsoleFullAccess) — accepted trade-off, not hidden via IAM. Set to false to keep them out of the sandbox during teaching."
+  type        = bool
+  default     = true
+}

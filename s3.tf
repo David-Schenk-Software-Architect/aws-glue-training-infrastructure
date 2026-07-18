@@ -70,21 +70,66 @@ resource "aws_s3_object" "orders_2_seed" {
   etag   = filemd5("${path.module}/data/orders_2.csv")
 }
 
-# ── Reference Glue job scripts (Ü5.1, Ü8.1, Ü9.A) ────────────────────────────
-# Stages every PySpark script under solutions/ into scripts/ (path mirrored) so a
-# Glue job can point straight at it (create-job-from-script). This stages the
-# script FILES only — the Glue jobs themselves are still built live by the
-# participant (see "Deliberately NOT created"). Notebooks/ASL are not S3 job
-# scripts and stay git-only. Trade-off: solution scripts are then visible in the
-# same bucket the trainee browses — hand these out after the exercise if that
-# matters for the challenge (Ü9.A especially).
+# ── Reference artifacts staged under scripts/ ────────────────────────────────
+# Every artifact under solutions/ is mirrored into two sibling prefixes:
+#   scripts/examples/…   — trainee-READABLE starters   (example*, broken/**)
+#   scripts/solutions/…  — trainee-INVISIBLE solutions  (solution*, fixed/**)
+# READMEs match neither classification and are intentionally not staged. The
+# examples/solutions split is enforced for trainees by the scoped IAM policy in
+# trainee.tf (allow-list; scripts/solutions/ is simply never granted).
 
-resource "aws_s3_object" "reference_scripts" {
-  for_each = fileset("${path.module}/solutions", "**/*.py")
+locals {
+  solutions_dir = "${path.module}/solutions"
+
+  # examples ← example* + broken/**   ;   solutions ← solution* + fixed/**
+  example_files = toset(concat(
+    tolist(fileset(local.solutions_dir, "**/example*")),
+    tolist(fileset(local.solutions_dir, "**/broken/**")),
+  ))
+  solution_files = toset(concat(
+    tolist(fileset(local.solutions_dir, "**/solution*")),
+    tolist(fileset(local.solutions_dir, "**/fixed/**")),
+  ))
+
+  # content_type keyed by the last dotted segment (handles *.asl.json → "json").
+  script_content_types = {
+    py    = "text/x-python"
+    ipynb = "application/x-ipynb+json"
+    json  = "application/json"
+  }
+}
+
+resource "aws_s3_object" "example_scripts" {
+  for_each = local.example_files
 
   bucket       = aws_s3_bucket.lake.id
-  key          = "scripts/${each.value}"
-  source       = "${path.module}/solutions/${each.value}"
-  etag         = filemd5("${path.module}/solutions/${each.value}")
-  content_type = "text/x-python"
+  key          = "scripts/examples/${each.value}"
+  source       = "${local.solutions_dir}/${each.value}"
+  etag         = filemd5("${local.solutions_dir}/${each.value}")
+  content_type = lookup(local.script_content_types, element(reverse(split(".", each.value)), 0), "application/octet-stream")
+}
+
+resource "aws_s3_object" "solution_scripts" {
+  for_each = local.solution_files
+
+  bucket       = aws_s3_bucket.lake.id
+  key          = "scripts/solutions/${each.value}"
+  source       = "${local.solutions_dir}/${each.value}"
+  etag         = filemd5("${local.solutions_dir}/${each.value}")
+  content_type = lookup(local.script_content_types, element(reverse(split(".", each.value)), 0), "application/octet-stream")
+}
+
+# ── Per-trainee workspaces ───────────────────────────────────────────────────
+# One folder per trainee with notebooks/ + scripts/ sub-prefixes where they save
+# their own work. All trainees can see all trainee folders (shared policy).
+
+resource "aws_s3_object" "trainee_workspaces" {
+  for_each = {
+    for pair in setproduct(tolist(var.trainee_usernames), ["notebooks/", "scripts/"]) :
+    "scripts/${pair[0]}/${pair[1]}" => true
+  }
+
+  bucket       = aws_s3_bucket.lake.id
+  key          = each.key
+  content_type = "application/x-directory"
 }

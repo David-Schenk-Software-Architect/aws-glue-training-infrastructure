@@ -6,13 +6,13 @@ output "bucket_name" {
 output "s3_paths" {
   description = "S3 paths the exercises reference."
   value = {
-    raw_orders     = "s3://${aws_s3_bucket.lake.bucket}/raw/orders/"
-    raw_customers  = "s3://${aws_s3_bucket.lake.bucket}/raw/customers/"
-    processed      = "s3://${aws_s3_bucket.lake.bucket}/processed/"
-    scripts        = "s3://${aws_s3_bucket.lake.bucket}/scripts/"
-    temp           = "s3://${aws_s3_bucket.lake.bucket}/temp/"
-    athena_results = "s3://${aws_s3_bucket.lake.bucket}/athena-results/"
-    orders_2_seed  = "s3://${aws_s3_bucket.lake.bucket}/seed/orders_2.csv"
+    raw_orders       = "s3://${aws_s3_bucket.lake.bucket}/raw/orders/"
+    raw_customers    = "s3://${aws_s3_bucket.lake.bucket}/raw/customers/"
+    processed        = "s3://${aws_s3_bucket.lake.bucket}/processed/"
+    scripts_examples = "s3://${aws_s3_bucket.lake.bucket}/scripts/examples/"
+    temp             = "s3://${aws_s3_bucket.lake.bucket}/temp/"
+    athena_results   = "s3://${aws_s3_bucket.lake.bucket}/athena-results/"
+    orders_2_seed    = "s3://${aws_s3_bucket.lake.bucket}/seed/orders_2.csv"
   }
 }
 
@@ -24,6 +24,16 @@ output "glue_role_arn" {
 output "step_functions_role_arn" {
   description = "IAM role for the Step Functions state machine (Ü7.2)."
   value       = aws_iam_role.step_functions.arn
+}
+
+output "reference_glue_jobs" {
+  description = "Registered reference Glue job names (empty unless enable_reference_jobs = true)."
+  value       = [for j in aws_glue_job.reference : j.name]
+}
+
+output "reference_state_machine_arn" {
+  description = "Reference Step Functions state machine ARN (null unless enable_reference_jobs = true)."
+  value       = var.enable_reference_jobs ? aws_sfn_state_machine.reference[0].arn : null
 }
 
 output "athena_workgroup" {

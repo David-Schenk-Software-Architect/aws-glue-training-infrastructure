@@ -9,8 +9,11 @@ davor und danach:
   absichtlich kaputte Pipeline. Einstiegspunkt.
 - `solution.*` / `fixed/` — **Lösung**: fertig, kommentiert, lauffähig gegen die Sandbox.
 
-> **Nicht Terraform-managed.** Dieses Verzeichnis wird von keiner `.tf`-Ressource
-> referenziert und von der CI **nicht** deployed. Reine Lehr-/Referenzartefakte.
+> **Nach S3 gestaged.** Der Stack spiegelt alle Artefakte in den Bucket unter `scripts/`:
+> Starter (`example*`, `broken/`) → `scripts/examples/…` (**Trainee-sichtbar**), Lösungen
+> (`solution*`, `fixed/`) → `scripts/solutions/…` (**für Trainees unsichtbar** via gescopter
+> S3-Policy, Allow-Liste ohne Deny). Zusätzlich werden die Lösungsskripte via
+> `enable_reference_jobs` (default **an**) als echte Glue-Jobs registriert.
 
 **Glue-Version:** alle Skripte/Notebooks sind auf **Glue 5.0** ausgelegt (Spark 3.5,
 Python 3.11). Bei Bedarf auf 4.0 anpassen — im Zweifel die Version beim Job-/Session-Start
@@ -29,19 +32,28 @@ gemäß Notion-Block wählen.
 
 ## In die Sandbox laden
 
-- **Job-Skript** (`.py`): alle `.py` aus diesem Verzeichnis werden vom Stack nach
-  `s3://gfu-glue-training-<account>/scripts/` gespiegelt (Pfad erhalten, z. B.
-  `scripts/ue5.1-orders-to-parquet-job/solution_orders_to_parquet.py`). Beim Job-Anlegen
-  in Glue Studio als Skript-Location referenzieren — oder Skriptinhalt in den *Script
-  editor* einfügen. IAM-Rolle `AWSGlueServiceRole-GfuGlueTraining`, Glue 5.0,
-  Job-Parameter setzen (siehe Header jeder Datei). `tofu output s3_paths` → `scripts`.
-  *Hinweis:* die Lösungsskripte liegen damit im selben Bucket, den der Teilnehmer sieht —
-  bei Debugging-Challenges (Ü9.A) ggf. erst nach der Übung aushändigen.
-- **Notebook** (`.ipynb`): Glue Studio → *Notebook* → *Upload notebook*. Die
-  `%`-Magics in den ersten Zellen konfigurieren die Interactive Session (Rolle,
-  Glue-Version, Worker). Alternativ Zellen in ein neues Session-Notebook kopieren.
+S3-Layout (Pfad je Artefakt erhalten):
+`scripts/examples/<übung>/…` (Starter) · `scripts/solutions/<übung>/…` (Lösung, nur Trainer).
+Jeder Trainee hat zudem `scripts/<username>/{notebooks,scripts}/` für eigene Arbeit.
+
+- **Job-Skript** (`.py`): beim Job-Anlegen in Glue Studio die S3-Location referenzieren, z. B.
+  `s3://gfu-glue-training-<account>/scripts/solutions/ue5.1-orders-to-parquet-job/solution_orders_to_parquet.py`
+  — oder Skriptinhalt in den *Script editor* einfügen. IAM-Rolle
+  `AWSGlueServiceRole-GfuGlueTraining`, Glue 5.0, Job-Parameter setzen (siehe Header jeder
+  Datei). Starter unter `scripts/examples/…`.
+- **Notebook** (`.ipynb`): aus `scripts/examples/…` bzw. `scripts/solutions/…` laden →
+  Glue Studio → *Notebook* → *Upload notebook*. Die `%`-Magics in den ersten Zellen
+  konfigurieren die Interactive Session. Alternativ Zellen in ein neues Session-Notebook
+  kopieren.
 - **ASL** (`.asl.json`): Step Functions → *Create state machine* → *Write your workflow
   in code* → JSON einfügen. Ausführungsrolle `StepFunctionsGlueExecutionRole-GfuGlueTraining`.
+  *(Bei `enable_reference_jobs` (default an) ist die Lösung bereits als
+  `ref-orders-pipeline-solution` deployed.)*
+
+*Sichtbarkeit:* Lösungen unter `scripts/solutions/` sind für Trainees per S3-Policy
+unsichtbar. Da `enable_reference_jobs` default **an** ist, tauchen die `ref-…-solution`-Jobs
+allerdings in der Glue-Konsole der Trainees auf — bei Debugging-Challenges (Ü9.A) daher
+`enable_reference_jobs = false` setzen.
 
 ## Datengrundlage (Seed-Daten, bereits in S3)
 

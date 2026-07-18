@@ -26,10 +26,11 @@ resource "aws_iam_access_key" "trainee" {
 }
 
 # Broad managed policies covering every exercise across all 9 blocks.
+# AmazonS3FullAccess is deliberately NOT here — S3 access to the data lake is
+# scoped by aws_iam_policy.trainee_bucket below (allow-list, hides scripts/solutions/).
 locals {
   trainee_managed_policies = [
     "arn:aws:iam::aws:policy/AWSGlueConsoleFullAccess",
-    "arn:aws:iam::aws:policy/AmazonS3FullAccess",
     "arn:aws:iam::aws:policy/AmazonAthenaFullAccess",
     "arn:aws:iam::aws:policy/AWSStepFunctionsFullAccess",
     "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
@@ -66,4 +67,106 @@ resource "aws_iam_user_policy" "trainee_passrole" {
   name     = "gfu-trainee-passrole"
   user     = each.value.name
   policy   = data.aws_iam_policy_document.trainee_passrole.json
+}
+
+# ── Scoped S3 access to the data lake ────────────────────────────────────────
+# Replaces AmazonS3FullAccess. ALLOW-LIST ONLY — no Deny, no NotResource. The
+# scripts/solutions/ prefix is hidden from trainees purely by being absent from
+# every statement below. All trainees share this policy and can see all trainee
+# workspaces; only solutions/ is withheld.
+
+locals {
+  lake_arn = aws_s3_bucket.lake.arn
+
+  # Exercise data prefixes trainees may read + write freely.
+  trainee_rw_data_prefixes = [
+    "raw/",
+    "processed/",
+    "temp/",
+    "athena-results/",
+    "seed/",
+  ]
+}
+
+data "aws_iam_policy_document" "trainee_bucket" {
+  # 1) Read+write on all exercise data prefixes.
+  statement {
+    sid       = "DataObjectsReadWrite"
+    actions   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+    resources = [for p in local.trainee_rw_data_prefixes : "${local.lake_arn}/${p}*"]
+  }
+
+  # 2) Read-only on the staged example artifacts.
+  statement {
+    sid       = "ExampleScriptsReadOnly"
+    actions   = ["s3:GetObject"]
+    resources = ["${local.lake_arn}/scripts/examples/*"]
+  }
+
+  # 3) Read+write on EVERY trainee workspace (shared — all trainees see all).
+  statement {
+    sid       = "TraineeWorkspacesReadWrite"
+    actions   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+    resources = [for u in var.trainee_usernames : "${local.lake_arn}/scripts/${u}/*"]
+  }
+
+  # 4) List ONLY the allow-listed prefixes. Do NOT add "" (non-delimited),
+  #    "scripts/" or "scripts/*" here — any of those would let a trainee
+  #    enumerate scripts/solutions/ and defeat the whole hiding scheme. The
+  #    delimited root list is granted separately in statement 4b.
+  statement {
+    sid       = "ListAllowedPrefixesOnly"
+    actions   = ["s3:ListBucket"]
+    resources = [local.lake_arn]
+
+    condition {
+      test     = "StringLike"
+      variable = "s3:prefix"
+      values = concat(
+        [for p in local.trainee_rw_data_prefixes : "${p}*"],
+        ["scripts/examples/*"],
+        [for u in var.trainee_usernames : "scripts/${u}/*"],
+      )
+    }
+  }
+
+  # 4b) Delimited root listing only, for S3-console / Glue-Studio "Browse S3".
+  #     prefix="" is permitted ONLY together with delimiter="/", so it returns
+  #     top-level common prefixes (raw/, scripts/, …) but can never recurse into
+  #     scripts/ — solutions/ stays invisible.
+  statement {
+    sid       = "ListBucketRootDelimitedOnly"
+    actions   = ["s3:ListBucket"]
+    resources = [local.lake_arn]
+
+    condition {
+      test     = "StringEquals"
+      variable = "s3:prefix"
+      values   = [""]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "s3:delimiter"
+      values   = ["/"]
+    }
+  }
+
+  # 5) Console usability: enumerate buckets and resolve region.
+  statement {
+    sid       = "AccountBucketMetadata"
+    actions   = ["s3:GetBucketLocation", "s3:ListAllMyBuckets"]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "trainee_bucket" {
+  name        = "gfu-trainee-bucket-scoped"
+  description = "Scoped S3 access to the training data lake: RW on data prefixes + all trainee workspaces, RO on scripts/examples/, no visibility of scripts/solutions/."
+  policy      = data.aws_iam_policy_document.trainee_bucket.json
+}
+
+resource "aws_iam_user_policy_attachment" "trainee_bucket" {
+  for_each   = aws_iam_user.trainee
+  user       = each.value.name
+  policy_arn = aws_iam_policy.trainee_bucket.arn
 }
