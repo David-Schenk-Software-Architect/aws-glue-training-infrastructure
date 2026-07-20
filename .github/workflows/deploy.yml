@@ -69,11 +69,14 @@ jobs:
           ROLE_ARN=$(tofu output -raw glue_role_arn)
           TRANSFORMS="arn:aws:s3:::aws-glue-studio-transforms-560373232017-prod-${AWS_DEFAULT_REGION}/*"
           FAILED=0
+          # $3 is an optional context entry, needed for actions whose grant carries a
+          # condition — the simulator evaluates conditions as false unless fed the key.
           assert() {
             DECISION=$(aws iam simulate-principal-policy \
               --policy-source-arn "$ROLE_ARN" \
               --action-names "$1" \
               --resource-arns "$2" \
+              ${3:+--context-entries "$3"} \
               --query 'EvaluationResults[0].EvalDecision' --output text)
             if [ "$DECISION" != "allowed" ]; then
               echo "::error::$1 on $2 => $DECISION (expected allowed)"
@@ -90,4 +93,7 @@ jobs:
           assert s3:PutObject "arn:aws:s3:::$(tofu output -raw bucket_name)/processed/probe"
           assert glue:CreateTable "*"
           assert logs:PutLogEvents "arn:aws:logs:${AWS_DEFAULT_REGION}:${{ secrets.AWS_ACCOUNT_ID }}:log-group:/aws-glue/jobs/logs-v2:*"
+          # Console notebook kernels run as this role and pass it back to CreateSession.
+          assert iam:PassRole "$ROLE_ARN" \
+            "ContextKeyName=iam:PassedToService,ContextKeyValues=glue.amazonaws.com,ContextKeyType=string"
           exit $FAILED

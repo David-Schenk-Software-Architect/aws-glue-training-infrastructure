@@ -2,8 +2,10 @@
 # Name starts with "AWSGlueServiceRole" (Notion requirement). Used by crawlers,
 # jobs AND interactive sessions across Ü3.1 / Ü4.1 / Ü5.1 / Ü6.1 / Ü7.1 / Ü8.x.
 # AWS-managed AWSGlueServiceRole covers glue:* (catalog) + CloudWatch logs on
-# /aws-glue/* + PassRole-to-Glue; the inline policy adds S3 on our bucket, whose
-# name is not aws-glue-* so it is not covered by the managed policy.
+# /aws-glue/*; the inline policy adds S3 on our bucket, whose name is not
+# aws-glue-* so it is not covered by the managed policy. The managed policy grants
+# NO iam:PassRole — its only iam:* actions are ListRolePolicies/GetRole/GetRolePolicy.
+# PassRole is granted explicitly below.
 
 data "aws_iam_policy_document" "glue_assume" {
   statement {
@@ -51,6 +53,22 @@ data "aws_iam_policy_document" "glue_inline" {
       "s3:DeleteObject",
     ]
     resources = ["${aws_s3_bucket.lake.arn}/*"]
+  }
+
+  # A console notebook kernel runs AS this role (GlueJobRunnerSession) and calls
+  # glue:CreateSession passing this same role back, so the role must be allowed to
+  # pass itself. Jobs and crawlers never hit this — Glue assumes the role directly.
+  # Scoped to this one role and conditioned on Glue, so it cannot pass anything else.
+  statement {
+    sid       = "PassSelfToGlue"
+    actions   = ["iam:PassRole"]
+    resources = [aws_iam_role.glue.arn]
+
+    condition {
+      test     = "StringEquals"
+      variable = "iam:PassedToService"
+      values   = ["glue.amazonaws.com"]
+    }
   }
 
   # Explicit catalog writes (also covered by the managed policy) so the role is
