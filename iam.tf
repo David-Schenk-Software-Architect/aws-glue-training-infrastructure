@@ -22,9 +22,18 @@ resource "aws_iam_role" "glue" {
   assume_role_policy = data.aws_iam_policy_document.glue_assume.json
 }
 
+# replace_triggered_by is load-bearing: this resource's id is <role-name>/<policy-arn>,
+# so a ForceNew on the role (path, name, …) recreates the role WITHOUT re-planning the
+# attachment — the apply goes green while the role ends up with no managed policy at all.
+# That happened once (commit dddb6ca added path = "/service-role/") and broke every Glue
+# Studio data preview until it was re-applied.
 resource "aws_iam_role_policy_attachment" "glue_managed" {
   role       = aws_iam_role.glue.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
+
+  lifecycle {
+    replace_triggered_by = [aws_iam_role.glue]
+  }
 }
 
 data "aws_iam_policy_document" "glue_inline" {
@@ -84,6 +93,14 @@ data "aws_iam_policy_document" "glue_kms" {
       "kms:DescribeKey",
     ]
     resources = [aws_kms_key.glue[0].arn]
+  }
+
+  # Without AssociateKmsKey a Security Configuration with CloudWatch-Logs encryption
+  # does not error — it silently stops writing logs. Ü8.2 depends on this.
+  statement {
+    sid       = "GlueLogsKms"
+    actions   = ["logs:AssociateKmsKey"]
+    resources = ["arn:aws:logs:${local.region}:${local.account_id}:log-group:/aws-glue/*"]
   }
 }
 

@@ -59,3 +59,35 @@ jobs:
       - name: Tofu apply
         if: github.event_name == 'push'
         run: tofu apply -input=false -auto-approve tfplan
+
+      # A green apply is not proof the Glue role is usable: an attachment that is not
+      # re-planned leaves the role silently unprivileged. Assert the effective
+      # permissions instead of trusting the plan.
+      - name: Assert Glue role permissions
+        if: github.event_name == 'push'
+        run: |
+          ROLE_ARN=$(tofu output -raw glue_role_arn)
+          TRANSFORMS="arn:aws:s3:::aws-glue-studio-transforms-560373232017-prod-${AWS_DEFAULT_REGION}/*"
+          FAILED=0
+          assert() {
+            DECISION=$(aws iam simulate-principal-policy \
+              --policy-source-arn "$ROLE_ARN" \
+              --action-names "$1" \
+              --resource-arns "$2" \
+              --query 'EvaluationResults[0].EvalDecision' --output text)
+            if [ "$DECISION" != "allowed" ]; then
+              echo "::error::$1 on $2 => $DECISION (expected allowed)"
+              FAILED=1
+            else
+              echo "ok: $1 on $2"
+            fi
+          }
+          # Glue Studio data preview / visual editor transforms.
+          assert s3:GetObject "$TRANSFORMS"
+          # Studio-generated scripts, notebooks and default temp dir.
+          assert s3:PutObject "arn:aws:s3:::aws-glue-assets-${{ secrets.AWS_ACCOUNT_ID }}-${AWS_DEFAULT_REGION}/scripts/probe.py"
+          # Data lake + catalog + continuous logging.
+          assert s3:PutObject "arn:aws:s3:::$(tofu output -raw bucket_name)/processed/probe"
+          assert glue:CreateTable "*"
+          assert logs:PutLogEvents "arn:aws:logs:${AWS_DEFAULT_REGION}:${{ secrets.AWS_ACCOUNT_ID }}:log-group:/aws-glue/jobs/logs-v2:*"
+          exit $FAILED
