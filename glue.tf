@@ -46,6 +46,16 @@ locals {
         "--output_path" = "s3://${aws_s3_bucket.lake.bucket}/processed/orders_enriched/"
       }
     }
+    # Ü-I: schreibt raw.orders als Iceberg-Tabelle nach processed/orders_iceberg/
+    # und registriert sie im Data Catalog. --datalake-formats=iceberg lädt die
+    # Iceberg-Jars; die Katalog-Confs setzt das Skript selbst via SparkConf.
+    "ref-orders-iceberg-solution" = {
+      script_key = aws_s3_object.solution_scripts["ue-i-iceberg-table/solution_orders_iceberg.py"].key
+      arguments = {
+        "--warehouse_path"   = "s3://${aws_s3_bucket.lake.bucket}/processed/"
+        "--datalake-formats" = "iceberg"
+      }
+    }
   }
 }
 

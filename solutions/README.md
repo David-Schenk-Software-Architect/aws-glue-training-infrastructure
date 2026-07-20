@@ -39,8 +39,9 @@ gemäß Notion-Block wählen.
 | **Ü-F** | ResolveChoice: vier Strategien (Block 4) | `…/{example,solution}.ipynb` **+** `…/{example,solution}_resolvechoice.py` | Notebook **+** Job-Skript |
 | **Ü-G** | DynamoDB nativ: schreiben & lesen (Block 6) | `…/{example,solution}.ipynb` **+** `…/{example,solution}_dynamodb.py` | Notebook **+** Job-Skript |
 | **Ü-H** | Lazy Evaluation: die zwei Fallen (Block 4) | `…/{example,solution}.ipynb` **+** `…/{example,solution}_lazy_eval.py` | Notebook **+** Job-Skript |
+| **Ü-I** | Iceberg-Tabelle erzeugen & katalogisieren (Block 3) | `…/{example,solution}.ipynb` **+** `…/{example,solution}_orders_iceberg.py` | Notebook **+** Job-Skript |
 
-> **Zwei Formen je Spark-Übung.** Ü4.1, Ü5.1, Ü6.1, Ü8.1, Ü-F, Ü-G, Ü-H liegen als
+> **Zwei Formen je Spark-Übung.** Ü4.1, Ü5.1, Ü6.1, Ü8.1, Ü-F, Ü-G, Ü-H, Ü-I liegen als
 > **Notebook** (`.ipynb`, Interactive Session) **und** als **Job-Skript** (`.py`,
 > submit-fähig mit `Job.init`/`job.commit` + `getResolvedOptions`) vor — Beispiel und
 > Lösung jeweils. Beide werden per Glob (`example*`/`solution*`) automatisch nach
