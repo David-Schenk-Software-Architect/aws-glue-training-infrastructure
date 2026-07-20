@@ -48,6 +48,8 @@ resource "aws_s3_object" "prefixes" {
 # customers.json → raw/customers/ (Ü6.1 nested-JSON source; second Block 9 source)
 # orders_2.csv → seed/ (NOT raw/orders/ — the participant copies it in during
 #                Ü8.1 to trigger the incremental bookmark run)
+# serverlog.log → raw/serverlog/ (Ü-D custom-classifier source: app log no built-in
+#                classifier parses; the trainee builds a Grok classifier)
 
 resource "aws_s3_object" "orders" {
   bucket = aws_s3_bucket.lake.id
@@ -68,6 +70,13 @@ resource "aws_s3_object" "orders_2_seed" {
   key    = "seed/orders_2.csv"
   source = "${path.module}/data/orders_2.csv"
   etag   = filemd5("${path.module}/data/orders_2.csv")
+}
+
+resource "aws_s3_object" "serverlog" {
+  bucket = aws_s3_bucket.lake.id
+  key    = "raw/serverlog/serverlog.log"
+  source = "${path.module}/data/serverlog.log"
+  etag   = filemd5("${path.module}/data/serverlog.log")
 }
 
 # ── Reference artifacts staged under scripts/ ────────────────────────────────

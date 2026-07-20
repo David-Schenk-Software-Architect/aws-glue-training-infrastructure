@@ -129,6 +129,34 @@ resource "aws_iam_role_policy" "glue_kms" {
   policy = data.aws_iam_policy_document.glue_kms[0].json
 }
 
+# DynamoDB grants for the Glue role, only when the optional table exists. The
+# native DynamoDB connector reads via Scan and writes via BatchWriteItem, both of
+# which also call DescribeTable. Needed by Ü-G (write+read-back) and by the Block 9
+# capstone that targets the enriched table. Scoped to the one training table.
+data "aws_iam_policy_document" "glue_dynamodb" {
+  count = var.enable_dynamodb ? 1 : 0
+
+  statement {
+    sid = "GlueDynamoDb"
+    actions = [
+      "dynamodb:DescribeTable",
+      "dynamodb:Scan",
+      "dynamodb:Query",
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:BatchWriteItem",
+    ]
+    resources = [aws_dynamodb_table.orders_enriched[0].arn]
+  }
+}
+
+resource "aws_iam_role_policy" "glue_dynamodb" {
+  count  = var.enable_dynamodb ? 1 : 0
+  name   = "gfu-glue-dynamodb"
+  role   = aws_iam_role.glue.id
+  policy = data.aws_iam_policy_document.glue_dynamodb[0].json
+}
+
 # ── Step Functions execution role (Ü7.2) ────────────────────────────────────
 # Starts and monitors the participant-built Glue job via glue:startJobRun.sync.
 

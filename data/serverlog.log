@@ -1,0 +1,10 @@
+2026-06-01T08:14:22Z INFO order-service cust=C001 status=shipped amount=129.90
+2026-06-01T08:15:01Z WARN order-service cust=C002 status=partial amount=58.00
+2026-06-01T08:16:47Z INFO order-service cust=C003 status=shipped amount=0.00
+2026-06-01T08:19:12Z ERROR order-service cust=C004 status=failed amount=240.50
+2026-06-01T08:22:35Z INFO order-service cust=C005 status=shipped amount=17.25
+2026-06-01T08:25:59Z INFO order-service cust=C006 status=shipped amount=333.10
+2026-06-01T08:31:03Z WARN payment-service cust=C002 status=retry amount=58.00
+2026-06-01T08:33:41Z INFO order-service cust=C001 status=delivered amount=129.90
+2026-06-01T08:40:18Z ERROR payment-service cust=C004 status=declined amount=240.50
+2026-06-01T08:44:52Z INFO order-service cust=C003 status=shipped amount=64.00

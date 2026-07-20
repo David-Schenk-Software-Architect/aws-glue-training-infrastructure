@@ -30,6 +30,22 @@ gemäß Notion-Block wählen.
 | **Ü8.1** | Job Bookmark & Monitoring | `ue8.1-bookmark-job/{example,solution}_orders_incremental.py` | Glue-Job-Skript (inkrementell) |
 | **Ü9.A** | Die verhexte Pipeline (Debugging) | `ue9.a-verhexte-pipeline/{broken,fixed}/` + `README.md` | Debugging-Challenge |
 
+### Optionale Vertiefungen (kosteneffizient)
+
+| Übung | Thema | Artefakte | Typ |
+|---|---|---|---|
+| **Ü-D** | Custom Classifier: Log crawlen (Block 3) | `ue-d-custom-classifier/README.md` | Trainer-Referenz (kein Skript — Konsolenaufgabe) |
+| **Ü-E** | Python-Shell-Job: Catalog-Audit (Block 5) | `ue-e-python-shell-catalog-audit/{example,solution}_catalog_audit.py` | Python-Shell-Job (boto3, kein Spark) |
+| **Ü-F** | ResolveChoice: vier Strategien (Block 4) | `ue-f-resolvechoice-strategies/{example,solution}.ipynb` | Glue-Interactive-Session-Notebook |
+| **Ü-G** | DynamoDB nativ: schreiben & lesen (Block 6) | `ue-g-dynamodb-native/{example,solution}.ipynb` | Glue-Interactive-Session-Notebook |
+| **Ü-H** | Lazy Evaluation: die zwei Fallen (Block 4) | `ue-h-lazy-evaluation/{example,solution}.ipynb` | Glue-Interactive-Session-Notebook |
+
+> **Ü-D stagt keine Datei** — der Trainee baut Classifier + Crawler in der Konsole; die
+> README ist die Trainer-Lösung. **Ü-E** wird als Job-Typ **Python Shell** angelegt (nicht
+> Spark ETL), Parameter `--report_bucket`, bleibt bewusst read-only (glue:Get* + s3
+> Get/Put, kein Löschen). **Ü-G** braucht `enable_dynamodb` (default an) und die
+> DynamoDB-Rechte der Glue-Rolle (`gfu-glue-dynamodb`, ergänzt in `iam.tf`).
+
 ## In die Sandbox laden
 
 S3-Layout (Pfad je Artefakt erhalten):
@@ -64,6 +80,7 @@ Alle Artefakte arbeiten gegen dieselben Seed-Daten aus `../data/`:
 | `orders.csv` | `raw/orders/orders.csv` | Header **mit Leerzeichen** `cust id,order total,order date,status`; eine Zeile mit gequotetem Komma (`"shipped, partial"`); eine leere `order total` |
 | `orders_2.csv` | `seed/orders_2.csv` | Gleiche Struktur, spätere Daten — für den Bookmark-Lauf (Ü8.1) nach `raw/orders/` kopieren |
 | `customers.json` | `raw/customers/customers.json` | Geschachtelt (`address`, `contacts[]`); `loyalty_points` **mischtypig** (`1200` vs `"gold"`); ein leeres `contacts:[]` |
+| `serverlog.log` | `raw/serverlog/serverlog.log` | Zeilen-App-Log, **kein Built-in-Klassifizierer** parst es — Ü-D baut einen Grok-Custom-Classifier |
 
 Feste Namen aus dem Stack (siehe `tofu output`): Bucket `gfu-glue-training-<account>`,
 Catalog-DBs `raw`/`processed`, Glue-Rolle `AWSGlueServiceRole-GfuGlueTraining`,
