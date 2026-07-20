@@ -1,3 +1,10 @@
 {"customer_id":"C001","name":"Alice","address":{"city":"Berlin","zip":"10115"},"contacts":[{"type":"email","value":"alice@example.com"},{"type":"phone","value":"+49301234"}],"loyalty_points":1200}
 {"customer_id":"C002","name":"Bob","address":{"city":"Hamburg","zip":"20095"},"contacts":[{"type":"email","value":"bob@example.com"}],"loyalty_points":"gold"}
 {"customer_id":"C003","name":"Carol","address":{"city":"München","zip":"80331"},"contacts":[],"loyalty_points":800}
+{"customer_id":"C004","name":"Dieter","address":{"city":"Köln","zip":"50667"},"contacts":[{"type":"email","value":"dieter@example.com"},{"type":"phone","value":"+49221987"}],"loyalty_points":450}
+{"customer_id":"C005","name":"Eva","address":{"city":"Frankfurt","zip":"60311"},"contacts":[{"type":"email","value":"eva@example.com"}],"loyalty_points":2300}
+{"customer_id":"C006","name":"Frank","address":{"city":"Stuttgart","zip":"70173"},"contacts":[{"type":"email","value":"frank@example.com"},{"type":"phone","value":"+49711555"}],"loyalty_points":60}
+{"customer_id":"C007","name":"Greta","address":{"city":"Düsseldorf","zip":"40213"},"contacts":[{"type":"email","value":"greta@example.com"}],"loyalty_points":1500}
+{"customer_id":"C008","name":"Hans","address":{"city":"Leipzig","zip":"04109"},"contacts":[{"type":"email","value":"hans@example.com"},{"type":"phone","value":"+49341222"}],"loyalty_points":"platinum"}
+{"customer_id":"C009","name":"Ida","address":{"city":"Dresden","zip":"01067"},"contacts":[],"loyalty_points":0}
+{"customer_id":"C010","name":"Jan","address":{"city":"Bremen","zip":"28195"},"contacts":[{"type":"email","value":"jan@example.com"}],"loyalty_points":320}

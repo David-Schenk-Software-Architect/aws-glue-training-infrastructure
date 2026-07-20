@@ -1,3 +1,23 @@
 cust id,order total,order date,status
-C006,42.00,2026-06-04,shipped
-C007,310.75,2026-06-04,shipped
+C001,77.00,2026-06-10,shipped
+C001,145.30,2026-06-12,delivered
+C002,,2026-06-10,pending
+C002,63.40,2026-06-13,"shipped, partial"
+C003,208.00,2026-06-11,shipped
+C003,19.99,2026-06-14,cancelled
+C004,143.20,2026-06-10,delivered
+C004,88.80,2026-06-13,shipped
+C005,265.00,2026-06-11,shipped
+C005,37.50,2026-06-15,refunded
+C006,54.60,2026-06-12,delivered
+C006,199.00,2026-06-14,shipped
+C007,72.10,2026-06-11,shipped
+C007,410.25,2026-06-15,delivered
+C008,29.90,2026-06-12,cancelled
+C008,158.00,2026-06-14,shipped
+C009,52.00,2026-06-11,shipped
+C009,18.75,2026-06-13,"shipped, partial"
+C010,260.00,2026-06-12,shipped
+C010,,2026-06-15,pending
+C001,95.50,2026-06-16,delivered
+C005,41.00,2026-06-16,shipped

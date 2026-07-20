@@ -87,9 +87,9 @@ Alle Artefakte arbeiten gegen dieselben Seed-Daten aus `../data/`:
 
 | Datei | S3-Pfad | Besonderheit |
 |---|---|---|
-| `orders.csv` | `raw/orders/orders.csv` | Header **mit Leerzeichen** `cust id,order total,order date,status`; eine Zeile mit gequotetem Komma (`"shipped, partial"`); eine leere `order total` |
-| `orders_2.csv` | `seed/orders_2.csv` | Gleiche Struktur, spätere Daten — für den Bookmark-Lauf (Ü8.1) nach `raw/orders/` kopieren |
-| `customers.json` | `raw/customers/customers.json` | Geschachtelt (`address`, `contacts[]`); `loyalty_points` **mischtypig** (`1200` vs `"gold"`); ein leeres `contacts:[]` |
+| `orders.csv` | `raw/orders/orders.csv` | **48 Zeilen** über 10 Kunden (C001–C010; C009/C010 **ohne** Order → Outer-Join-Fall). Header **mit Leerzeichen** `cust id,order total,order date,status`; eine Zeile mit gequotetem Komma (`"shipped, partial"`); zwei leere `order total` (C004, C005) → NULL |
+| `orders_2.csv` | `seed/orders_2.csv` | **22 Zeilen**, gleiche Struktur, spätere Daten (2026-06-10…16, alle 10 Kunden) — für den Bookmark-Lauf (Ü8.1) nach `raw/orders/` kopieren. Enthält dieselben Quirks (gequotetes Komma, leere `order total`) |
+| `customers.json` | `raw/customers/customers.json` | **10 Kunden** (C001–C010). Geschachtelt (`address`, `contacts[]`); `loyalty_points` **mischtypig** (`1200` vs `"gold"`/`"platinum"`); zwei leere `contacts:[]` (C003, C009) |
 | `serverlog.log` | `raw/serverlog/serverlog.log` | Zeilen-App-Log, **kein Built-in-Klassifizierer** parst es — Ü-D baut einen Grok-Custom-Classifier |
 
 Feste Namen aus dem Stack (siehe `tofu output`): Bucket `gfu-glue-training-<account>`,
