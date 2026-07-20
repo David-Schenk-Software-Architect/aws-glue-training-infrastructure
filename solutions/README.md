@@ -23,11 +23,11 @@ gemäß Notion-Block wählen.
 
 | Übung | Thema | Artefakte | Typ |
 |---|---|---|---|
-| **Ü4.1** | DynamicFrames im Notebook erkunden | `ue4.1-dynamicframes-notebook/{example,solution}.ipynb` | Glue-Interactive-Session-Notebook |
-| **Ü5.1** | Erster ETL-Job: S3 → S3 | `ue5.1-orders-to-parquet-job/{example,solution}_orders_to_parquet.py` | Glue-Job-Skript (PySpark) |
-| **Ü6.1** | Verschachteltes JSON relationalisieren | `ue6.1-relationalize-json/{example,solution}.ipynb` | Glue-Interactive-Session-Notebook |
+| **Ü4.1** | DynamicFrames im Notebook erkunden | `…/{example,solution}.ipynb` **+** `…/{example,solution}_dynamicframes.py` | Notebook **+** Job-Skript |
+| **Ü5.1** | Erster ETL-Job: S3 → S3 | `…/{example,solution}_orders_to_parquet.py` **+** `…/{example,solution}_orders_to_parquet.ipynb` | Job-Skript **+** Notebook |
+| **Ü6.1** | Verschachteltes JSON relationalisieren | `…/{example,solution}.ipynb` **+** `…/{example,solution}_relationalize.py` | Notebook **+** Job-Skript |
 | **Ü7.2** | Step-Functions State Machine | `ue7.2-step-functions/{example,solution}.asl.json` | Amazon States Language (ASL) |
-| **Ü8.1** | Job Bookmark & Monitoring | `ue8.1-bookmark-job/{example,solution}_orders_incremental.py` | Glue-Job-Skript (inkrementell) |
+| **Ü8.1** | Job Bookmark & Monitoring | `…/{example,solution}_orders_incremental.py` **+** `…/{example,solution}_orders_incremental.ipynb` | Job-Skript **+** Notebook |
 | **Ü9.A** | Die verhexte Pipeline (Debugging) | `ue9.a-verhexte-pipeline/{broken,fixed}/` + `README.md` | Debugging-Challenge |
 
 ### Optionale Vertiefungen (kosteneffizient)
@@ -36,10 +36,20 @@ gemäß Notion-Block wählen.
 |---|---|---|---|
 | **Ü-D** | Custom Classifier: Log crawlen (Block 3) | `ue-d-custom-classifier/README.md` | Trainer-Referenz (kein Skript — Konsolenaufgabe) |
 | **Ü-E** | Python-Shell-Job: Catalog-Audit (Block 5) | `ue-e-python-shell-catalog-audit/{example,solution}_catalog_audit.py` | Python-Shell-Job (boto3, kein Spark) |
-| **Ü-F** | ResolveChoice: vier Strategien (Block 4) | `ue-f-resolvechoice-strategies/{example,solution}.ipynb` | Glue-Interactive-Session-Notebook |
-| **Ü-G** | DynamoDB nativ: schreiben & lesen (Block 6) | `ue-g-dynamodb-native/{example,solution}.ipynb` | Glue-Interactive-Session-Notebook |
-| **Ü-H** | Lazy Evaluation: die zwei Fallen (Block 4) | `ue-h-lazy-evaluation/{example,solution}.ipynb` | Glue-Interactive-Session-Notebook |
+| **Ü-F** | ResolveChoice: vier Strategien (Block 4) | `…/{example,solution}.ipynb` **+** `…/{example,solution}_resolvechoice.py` | Notebook **+** Job-Skript |
+| **Ü-G** | DynamoDB nativ: schreiben & lesen (Block 6) | `…/{example,solution}.ipynb` **+** `…/{example,solution}_dynamodb.py` | Notebook **+** Job-Skript |
+| **Ü-H** | Lazy Evaluation: die zwei Fallen (Block 4) | `…/{example,solution}.ipynb` **+** `…/{example,solution}_lazy_eval.py` | Notebook **+** Job-Skript |
 
+> **Zwei Formen je Spark-Übung.** Ü4.1, Ü5.1, Ü6.1, Ü8.1, Ü-F, Ü-G, Ü-H liegen als
+> **Notebook** (`.ipynb`, Interactive Session) **und** als **Job-Skript** (`.py`,
+> submit-fähig mit `Job.init`/`job.commit` + `getResolvedOptions`) vor — Beispiel und
+> Lösung jeweils. Beide werden per Glob (`example*`/`solution*`) automatisch nach
+> `scripts/{examples,solutions}/` gestaged; kein Terraform-Eintrag nötig. Didaktik-Notiz:
+> bei Ü-F (Schema-Vergleiche) und Ü-H (UDF-Marker) zeigt die **Notebook**-Form die
+> Ausgaben inline — die Job-Form schreibt sie ins CloudWatch-Log; die Docstrings weisen
+> darauf hin. Bewusst **einformig**: Ü-D (Konsole), Ü-E (Python Shell, „nicht alles braucht
+> Spark"), Ü7.2 (ASL-Orchestrierung), Ü9.A (broken/fixed-Challenge).
+>
 > **Ü-D stagt keine Datei** — der Trainee baut Classifier + Crawler in der Konsole; die
 > README ist die Trainer-Lösung. **Ü-E** wird als Job-Typ **Python Shell** angelegt (nicht
 > Spark ETL), Parameter `--report_bucket`, bleibt bewusst read-only (glue:Get* + s3
