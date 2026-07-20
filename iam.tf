@@ -18,6 +18,7 @@ data "aws_iam_policy_document" "glue_assume" {
 
 resource "aws_iam_role" "glue" {
   name               = "AWSGlueServiceRole-GfuGlueTraining"
+  path               = "/service-role/"
   assume_role_policy = data.aws_iam_policy_document.glue_assume.json
 }
 
