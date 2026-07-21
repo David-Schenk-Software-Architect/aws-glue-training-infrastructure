@@ -1,5 +1,5 @@
-# ── Optional DynamoDB target for Block 9 (default on) ────────────────────────
-# Lean second target for the capstone pipeline (orders × customers enriched).
+# ── Optional DynamoDB target for Ü-G (default on) ────────────────────────────
+# Lean non-S3 target: Ü-G writes orders × customers enriched and reads it back.
 # PAY_PER_REQUEST => no standing capacity cost; storage at training scale ~free.
 
 resource "aws_dynamodb_table" "orders_enriched" {

@@ -17,7 +17,7 @@ variable "enable_kms" {
 }
 
 variable "enable_dynamodb" {
-  description = "Create an on-demand DynamoDB table as the optional Block 9 second target. PAY_PER_REQUEST is effectively free at training scale."
+  description = "Create an on-demand DynamoDB table as the non-S3 target for Ü-G. PAY_PER_REQUEST is effectively free at training scale."
   type        = bool
   default     = true
 }

@@ -118,12 +118,6 @@ locals {
         "--enable-observability-metrics" = "true"
       }
     }
-    "ref-orders-enriched-solution" = {
-      script_key = aws_s3_object.solution_scripts["ue9.a-verhexte-pipeline/fixed/enrich_orders.py"].key
-      arguments = {
-        "--output_path" = "s3://${aws_s3_bucket.lake.bucket}/processed/orders_enriched/"
-      }
-    }
     # Ü-I: schreibt raw.orders als Iceberg-Tabelle nach processed/orders_iceberg/
     # und registriert sie im Data Catalog. --datalake-formats=iceberg lädt die
     # Iceberg-Jars; die Katalog-Confs setzt das Skript selbst via SparkConf.

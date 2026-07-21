@@ -131,8 +131,8 @@ resource "aws_iam_role_policy" "glue_kms" {
 
 # DynamoDB grants for the Glue role, only when the optional table exists. The
 # native DynamoDB connector reads via Scan and writes via BatchWriteItem, both of
-# which also call DescribeTable. Needed by Ü-G (write+read-back) and by the Block 9
-# capstone that targets the enriched table. Scoped to the one training table.
+# which also call DescribeTable. Needed by Ü-G (write+read-back). Scoped to the
+# one training table.
 data "aws_iam_policy_document" "glue_dynamodb" {
   count = var.enable_dynamodb ? 1 : 0
 

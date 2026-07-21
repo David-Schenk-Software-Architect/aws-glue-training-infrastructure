@@ -13,17 +13,17 @@ from the caller's credentials / repo secrets at deploy time.
 | Resource | Purpose | Exercises |
 |---|---|---|
 | S3 bucket `gfu-glue-training-<account>` | `raw/ processed/ reporting/ temp/ athena-results/ seed/` | all |
-| Seed data | `raw/orders/orders.csv`, `raw/customers/customers.json`, `seed/orders_2.csv`, `raw/orders_bad/orders_bad.csv` | Ü3.1, Ü6.1, Ü8.1, Ü8.3 |
-| Reference artifacts | `solutions/**` staged to `scripts/examples/` (trainee-readable) and `scripts/solutions/` (trainee-hidden) | Ü4.1, Ü5.1, Ü6.1, Ü7.2, Ü8.1, Ü9.A |
+| Seed data | `raw/orders/orders.csv`, `raw/customers/customers.json`, `raw/events/events.json`, `seed/orders_2.csv`, `raw/orders_bad/orders_bad.csv`, `raw/serverlog/serverlog.log` | Ü3.1, Ü6.1, Ü8.1, Ü8.3, Ü-D, Block 9 |
+| Reference artifacts | `solutions/**` staged to `scripts/examples/` (trainee-readable) and `scripts/solutions/` (trainee-hidden) | Ü4.1, Ü5.1, Ü6.1, Ü7.2, Ü8.1, Ü8.3 |
 | Trainee workspaces | `scripts/<username>/{notebooks,scripts}/` per trainee (read+write) | all |
-| Reference jobs + state machines + Glue Workflow *(`enable_reference_jobs`, default off)* | `ref-…-solution` jobs, state machines `ref-orders-pipeline-solution` (Ü7.2) and `ref-crawler-pipeline-solution` (Folie 7.8), workflow `ref-orders-workflow-solution`, crawler `ref-raw-all-crawler-solution` | Ü5.1, Ü7.2, Ü7.7, Ü8.1, Ü9.A + Folie 7.8 |
+| Reference jobs + state machines + Glue Workflow *(`enable_reference_jobs`, default off)* | `ref-…-solution` jobs, state machines `ref-orders-pipeline-solution` (Ü7.2) and `ref-crawler-pipeline-solution` (Folie 7.8), workflow `ref-orders-workflow-solution`, crawler `ref-raw-all-crawler-solution` | Ü5.1, Ü7.2, Ü7.7, Ü8.1, Ü8.3 + Folie 7.8 |
 | IAM role `AWSGlueServiceRole-GfuGlueTraining` | crawlers, jobs, interactive sessions | Ü3.1–Ü8.x |
 | IAM role `StepFunctionsGlueExecutionRole-GfuGlueTraining` | Step Functions → Glue | Ü7.2 |
 | Athena workgroup `gfu-glue-training` | query-result location set | Ü3.1, Ü5.1 |
 | Glue Catalog DBs `raw`, `processed`, `reporting` | catalog targets; `reporting` is the Block-9 capstone target `daily_engagement_kpis` | Ü3.1, Ü5.1, Block 9 |
 | Glue Catalog table `raw.orders_bad` | pre-catalogued diagnose source (no crawler — the exercise starts at the diagnosis) | Ü8.3 |
 | KMS CMK *(`enable_kms`, default **on**, ~1 USD/month)* | Security Configuration; trainees get `kms:Decrypt` on it so they can verify the encrypted output/logs | Ü8.2 |
-| DynamoDB table *(optional, `enable_dynamodb`, default on)* | Block 9 second target | Block 9 |
+| DynamoDB table *(optional, `enable_dynamodb`, default on)* | native DynamoDB sink/source | Ü-G |
 | IAM users (`trainee_usernames`, default 1) | attendee console + CLI logins (scoped S3, broad Glue/Athena) | all |
 
 **Deliberately NOT created** — the participant builds these live during the exercises:
@@ -34,7 +34,8 @@ machines, Security Configurations, interactive sessions.
 
 `solutions/` holds **compare-after-exercise** reference code — a starter/example and a
 worked solution per in-scope exercise (Glue job scripts, interactive-session notebooks,
-a Step Functions ASL definition, and the Ü9.A debugging challenge). The scripts target the
+a Step Functions ASL definition, and the broken/fixed pair behind the Ü8.3 diagnosis).
+Block 9 deliberately has none — the capstone is an open task. The scripts target the
 same bucket, roles and catalog DBs this stack creates. See
 [`solutions/README.md`](solutions/README.md).
 
@@ -130,7 +131,7 @@ Optional toggles:
 
 ```bash
 tofu apply -var enable_kms=false       # drop the CMK for Ü8.2 (saves ~1 USD/month)
-tofu apply -var enable_dynamodb=false  # drop the Block 9 DynamoDB target
+tofu apply -var enable_dynamodb=false  # drop the Ü-G DynamoDB target
 ```
 
 Outputs (`tofu output`) give the bucket name, role ARNs, workgroup, catalog DBs and the

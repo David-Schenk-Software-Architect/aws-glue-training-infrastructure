@@ -28,7 +28,11 @@ gemäß Notion-Block wählen.
 | **Ü6.1** | Verschachteltes JSON relationalisieren | `…/{example,solution}.ipynb` **+** `…/{example,solution}_relationalize.py` | Notebook **+** Job-Skript |
 | **Ü7.2** | Step-Functions State Machine | `ue7.2-step-functions/{example,solution}.asl.json` | Amazon States Language (ASL) |
 | **Ü8.1** | Job Bookmark & Monitoring | `…/{example,solution}_orders_incremental.py` **+** `…/{example,solution}_orders_incremental.ipynb` | Job-Skript **+** Notebook |
-| **Ü9.A** | Die verhexte Pipeline (Debugging) | `ue9.a-verhexte-pipeline/{broken,fixed}/` + `README.md` | Debugging-Challenge |
+
+Für **Block 9** liegt bewusst kein Artefakt hier: der Capstone
+(`reporting.daily_engagement_kpis` aus `events.json`) ist eine offene Aufgabe, deren
+Weg der Trainee selbst wählt — eine Referenzlösung würde genau diese Entscheidung
+vorwegnehmen.
 
 ### Optionale Vertiefungen (kosteneffizient)
 
@@ -49,7 +53,7 @@ gemäß Notion-Block wählen.
 > bei Ü-F (Schema-Vergleiche) und Ü-H (UDF-Marker) zeigt die **Notebook**-Form die
 > Ausgaben inline — die Job-Form schreibt sie ins CloudWatch-Log; die Docstrings weisen
 > darauf hin. Bewusst **einformig**: Ü-D (Konsole), Ü-E (Python Shell, „nicht alles braucht
-> Spark"), Ü7.2 (ASL-Orchestrierung), Ü9.A (broken/fixed-Challenge).
+> Spark"), Ü7.2 (ASL-Orchestrierung), Ü8.3 (broken/fixed-Diagnose).
 >
 > **Ü-D stagt keine Datei** — der Trainee baut Classifier + Crawler in der Konsole; die
 > README ist die Trainer-Lösung. **Ü-E** wird als Job-Typ **Python Shell** angelegt (nicht
@@ -96,13 +100,13 @@ Jeder Trainee hat zudem `scripts/<username>/{notebooks,scripts}/` für eigene Ar
   kopieren.
 - **ASL** (`.asl.json`): Step Functions → *Create state machine* → *Write your workflow
   in code* → JSON einfügen. Ausführungsrolle `StepFunctionsGlueExecutionRole-GfuGlueTraining`.
-  *(Bei `enable_reference_jobs` (default an) ist die Lösung bereits als
+  *(Mit `enable_reference_jobs = true` ist die Lösung bereits als
   `ref-orders-pipeline-solution` deployed.)*
 
 *Sichtbarkeit:* Lösungen unter `scripts/solutions/` sind für Trainees per S3-Policy
-unsichtbar. Da `enable_reference_jobs` default **an** ist, tauchen die `ref-…-solution`-Jobs
-allerdings in der Glue-Konsole der Trainees auf — bei Debugging-Challenges (Ü9.A) daher
-`enable_reference_jobs = false` setzen.
+unsichtbar. `enable_reference_jobs` ist default **aus** — sonst stünden die
+`ref-…-solution`-Jobs in der Glue-Konsole jedes Trainees und nähmen die live gebauten
+Übungen vorweg, allen voran die Diagnose in Ü8.3. Nur zum Vorführen einschalten.
 
 ## Datengrundlage (Seed-Daten, bereits in S3)
 
