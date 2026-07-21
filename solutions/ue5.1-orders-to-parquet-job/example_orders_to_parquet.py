@@ -1,11 +1,10 @@
 """
-Ü5.1 — BEISPIEL/STARTER: ETL-Job `orders-s3-to-parquet` (S3 → S3)
+Ü5.1 — ETL-Job `orders-s3-to-parquet` (S3 → S3)
 
 Skelett zum Selbermachen. Der Boilerplate (Imports, GlueContext, Job-Init/Commit,
 Quelle) steht; die drei Kern-TODOs baust du selbst:
   TODO 1 — Mapping der schmutzigen Spaltennamen auf saubere, typisierte Spalten
   TODO 2 — Senke: partitioniertes Parquet + Katalogisierung als processed.orders
-Vergleich danach mit `solution_orders_to_parquet.py`.
 
 Job-Parameter: --JOB_NAME (automatisch), --output_path
 Glue-Version: 5.0   Worker: G.1X

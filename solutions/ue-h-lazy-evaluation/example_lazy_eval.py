@@ -1,9 +1,9 @@
 """
-Ü-H — BEISPIEL/STARTER (Job-Variante): Lazy Evaluation, die zwei Fallen
+Ü-H — (Job-Variante): Lazy Evaluation, die zwei Fallen
 
 Job-Gegenstück zu `example.ipynb`. Falle 1 (Neuberechnung) steht; ergänze den
 cache()-Fix und beobachte, dass die UDF-Marker im Run-Log dann nur einmal
-erscheinen. Vergleich danach mit `solution_lazy_eval.py`.
+erscheinen.
 
 Job-Parameter: --JOB_NAME (automatisch)
 Glue-Version: 5.0   Worker: G.1X

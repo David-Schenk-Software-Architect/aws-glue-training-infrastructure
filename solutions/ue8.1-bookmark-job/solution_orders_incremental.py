@@ -15,7 +15,7 @@ Job-Parameter (in Glue Studio unter "Job details" / "Job parameters" setzen):
   --job-bookmark-option        job-bookmark-enable      (Bookmark aktivieren)
   --enable-continuous-cloudwatch-log   true             (Continuous Logging)
   --enable-metrics             true                     (Observability-Metriken)
-  --output_path                s3://gfu-glue-training-<account>/processed/orders/
+  --output_path                s3://gfu-glue-training-629452195361/processed/orders/
   --JOB_NAME                   (Glue setzt dies automatisch)
 Glue-Version: 5.0   Worker: G.1X
 

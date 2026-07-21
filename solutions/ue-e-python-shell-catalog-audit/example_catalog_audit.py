@@ -1,5 +1,5 @@
 """
-Ü-E — STARTER: Catalog-Audit als Python-Shell-Job (kein Spark)
+Ü-E — Catalog-Audit als Python-Shell-Job (kein Spark)
 
 Ziel: einen **Python-Shell-Job** (statt Spark-ETL) bauen, der den Data Catalog
 NUR LESEND inventarisiert und einen Textreport nach S3 schreibt. Zeigt, dass
@@ -7,7 +7,7 @@ nicht jeder Glue-Job einen Spark-Cluster braucht.
 
 Job-Setup in Glue Studio:
   - Typ: **Python Shell** (nicht Spark). Python 3.9, boto3 vorinstalliert.
-  - Job-Parameter: --report_bucket   gfu-glue-training-<account>
+  - Job-Parameter: --report_bucket   gfu-glue-training-629452195361
 
 Fülle die # TODO-Stellen. Die IAM-Rolle darf glue:Get* + s3:GetObject/PutObject,
 aber NICHT löschen — der Job bleibt bewusst read-only.

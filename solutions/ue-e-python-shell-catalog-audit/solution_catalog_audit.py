@@ -19,13 +19,13 @@ Voraussetzungen (von der Infrastruktur bereitgestellt):
   - Catalog-DBs `raw` (Tabellen aus Ü3.1/Ü6.1) und `processed` (aus Ü5.1)
   - IAM-Rolle `AWSGlueServiceRole-GfuGlueTraining` — deckt glue:Get* + S3 auf dem
     Bucket ab (nur Lesen + PutObject für den Report; KEINE Löschrechte).
-  - Bucket `gfu-glue-training-<account>`
+  - Bucket `gfu-glue-training-629452195361`
 
 Job-Setup in Glue Studio:
   - Typ: **Python Shell** (nicht Spark). Python 3.9, boto3 vorinstalliert.
   - KEINE Glue/Spark-Bibliotheken — reines boto3.
   - Job-Parameter:
-      --report_bucket   gfu-glue-training-<account>
+      --report_bucket   gfu-glue-training-629452195361
   - Kosten: Bruchteil eines Spark-Laufs (0.0625 DPU möglich).
 """
 import sys

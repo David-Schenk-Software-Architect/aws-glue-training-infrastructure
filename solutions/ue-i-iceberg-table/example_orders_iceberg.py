@@ -1,5 +1,5 @@
 """
-Ü-I — STARTER: Iceberg-Tabelle in Glue erzeugen und im Catalog anlegen
+Ü-I — Iceberg-Tabelle in Glue erzeugen und im Catalog anlegen
 
 Skeleton mit TODO-Markern. Ziel: die katalogisierte Tabelle `raw.orders` als
 Apache-Iceberg-Tabelle nach processed/ schreiben, sodass sie im Glue Data Catalog
@@ -7,9 +7,7 @@ als `processed.orders_iceberg` auftaucht und aus Athena abfragbar ist.
 
 Iceberg ist in Glue 5.0 nativ dabei. Im Job-Setup setzen:
   --datalake-formats = iceberg
-  --warehouse_path   = s3://gfu-glue-training-<account>/processed/
-
-Die Lösung liegt in solution_orders_iceberg.py — erst selbst versuchen.
+  --warehouse_path   = s3://gfu-glue-training-629452195361/processed/
 """
 import sys
 

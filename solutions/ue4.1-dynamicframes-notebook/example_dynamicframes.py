@@ -1,9 +1,8 @@
 """
-Ü4.1 — BEISPIEL/STARTER (Job-Variante): DynamicFrames-Flow als Glue-Job-Skript
+Ü4.1 — (Job-Variante): DynamicFrames-Flow als Glue-Job-Skript
 
 Job-Gegenstück zum Notebook `example.ipynb`. Boilerplate (Job.init/commit,
-Quelle) steht; die Kern-TODOs baust du selbst. Vergleich danach mit
-`solution_dynamicframes.py`.
+Quelle) steht; die Kern-TODOs baust du selbst.
 
 Job-Parameter: --JOB_NAME (automatisch), --output_path
 Glue-Version: 5.0   Worker: G.1X

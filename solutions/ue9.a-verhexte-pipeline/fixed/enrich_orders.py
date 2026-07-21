@@ -11,7 +11,7 @@ hier behoben — Details in `../README.md` (Bug ↔ Symptom ↔ Fix). Drei der F
 sind Code (hier gefixt), zwei sind Umgebung (Crawler-SerDe, IAM — siehe README).
 
 Job-Parameter: --JOB_NAME (automatisch), --output_path
-  z. B. s3://gfu-glue-training-<account>/processed/orders_enriched/
+  z. B. s3://gfu-glue-training-629452195361/processed/orders_enriched/
 Glue-Version: 5.0
 """
 import sys

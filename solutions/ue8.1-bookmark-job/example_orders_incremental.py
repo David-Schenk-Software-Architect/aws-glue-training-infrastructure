@@ -1,5 +1,5 @@
 """
-Ü8.1 — BEISPIEL/STARTER: `orders-s3-to-parquet` inkrementell machen
+Ü8.1 — `orders-s3-to-parquet` inkrementell machen
 
 Ausgangspunkt ist dein fertiger Ü5.1-Job. Aufgabe: ihn inkrementell machen, sodass
 wiederholte Läufe nur neue Dateien verarbeiten. Zwei Baustellen:
@@ -11,11 +11,10 @@ Job-Parameter, die du in Glue Studio setzen musst:
   --job-bookmark-option                 job-bookmark-enable
   --enable-continuous-cloudwatch-log    true
   --enable-metrics                      true
-  --output_path                         s3://gfu-glue-training-<account>/processed/orders/
+  --output_path                         s3://gfu-glue-training-629452195361/processed/orders/
 
 Test: 1x laufen lassen → `seed/orders_2.csv` nach `raw/orders/` kopieren → erneut
 laufen lassen → prüfen, dass nur orders_2.csv verarbeitet wurde (CloudWatch/Metriken).
-Vergleich danach mit `solution_orders_incremental.py`.
 Glue-Version: 5.0
 """
 import sys

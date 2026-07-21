@@ -6,12 +6,12 @@ loyalty_points (mischtypig) mit resolveChoice(cast:string) vereinheitlichen, mit
 Relationalize in Root + contacts-Child zerlegen und beide als Parquet schreiben.
 
 Voraussetzungen: Catalog-DB raw mit Tabelle customers (Crawler), Rolle
-AWSGlueServiceRole-GfuGlueTraining, Bucket gfu-glue-training-<account>.
+AWSGlueServiceRole-GfuGlueTraining, Bucket gfu-glue-training-629452195361.
 
 Job-Parameter:
   --JOB_NAME       (automatisch)
-  --output_path    s3://gfu-glue-training-<account>/processed/   (Basis-Prefix)
-  --staging_path   s3://gfu-glue-training-<account>/temp/relationalize/
+  --output_path    s3://gfu-glue-training-629452195361/processed/   (Basis-Prefix)
+  --staging_path   s3://gfu-glue-training-629452195361/temp/relationalize/
 Glue-Version: 5.0   Worker: G.1X
 """
 import sys

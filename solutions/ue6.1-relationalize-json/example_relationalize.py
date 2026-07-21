@@ -1,9 +1,8 @@
 """
-Ü6.1 — BEISPIEL/STARTER (Job-Variante): Verschachteltes JSON relationalisieren
+Ü6.1 — (Job-Variante): Verschachteltes JSON relationalisieren
 
 Job-Gegenstück zu `example.ipynb`. Quelle + Boilerplate stehen; resolveChoice,
-Relationalize, Frame-Auswahl und Parquet-Write baust du selbst. Vergleich danach
-mit `solution_relationalize.py`.
+Relationalize, Frame-Auswahl und Parquet-Write baust du selbst.
 
 Job-Parameter: --JOB_NAME (automatisch), --output_path, --staging_path
 Glue-Version: 5.0   Worker: G.1X

@@ -11,7 +11,7 @@ diagnostiziert, benennt die Root-Cause und repariert; danach Vergleich mit
 
 3 Fehler stecken im Code (`broken/enrich_orders.py`), 2 in der Umgebung
 (Crawler-SerDe, IAM). Aufbau der Challenge: den Job mit
-`--output_path s3://gfu-glue-training-<account>/processed/orders_enriched/` und
+`--output_path s3://gfu-glue-training-629452195361/processed/orders_enriched/` und
 der Rolle `AWSGlueServiceRole-GfuGlueTraining` anlegen und laufen lassen.
 
 ## Auflösung — Bug ↔ Symptom ↔ Fix

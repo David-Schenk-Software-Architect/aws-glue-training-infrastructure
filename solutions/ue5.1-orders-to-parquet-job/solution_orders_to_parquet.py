@@ -15,11 +15,11 @@ Voraussetzungen (von der Infrastruktur bereitgestellt):
   - Catalog-DB `raw` mit Tabelle `orders` (Crawler aus Ü3.1)
   - Catalog-DB `processed` (leer, vorab angelegt)
   - IAM-Rolle `AWSGlueServiceRole-GfuGlueTraining`
-  - Bucket `gfu-glue-training-<account>`
+  - Bucket `gfu-glue-training-629452195361`
 
 Job-Parameter:
   --JOB_NAME        (Glue setzt dies automatisch)
-  --output_path     s3://gfu-glue-training-<account>/processed/orders/
+  --output_path     s3://gfu-glue-training-629452195361/processed/orders/
 Glue-Version: 5.0   Worker: G.1X
 """
 import sys

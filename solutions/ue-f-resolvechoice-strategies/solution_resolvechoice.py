@@ -10,7 +10,7 @@ Voraussetzung: customers.json unter raw/customers/ (kein Katalog/Crawler nötig)
 
 Job-Parameter:
   --JOB_NAME     (automatisch)
-  --input_path   s3://gfu-glue-training-<account>/raw/customers/
+  --input_path   s3://gfu-glue-training-629452195361/raw/customers/
 Glue-Version: 5.0   Worker: G.1X
 """
 import sys

@@ -11,7 +11,7 @@ Catalog-DB raw mit orders; customers.json unter raw/customers/.
 
 Job-Parameter:
   --JOB_NAME         (automatisch)
-  --customers_path   s3://gfu-glue-training-<account>/raw/customers/
+  --customers_path   s3://gfu-glue-training-629452195361/raw/customers/
   --ddb_table        gfu-glue-training-orders-enriched
 Glue-Version: 5.0   Worker: G.1X
 """

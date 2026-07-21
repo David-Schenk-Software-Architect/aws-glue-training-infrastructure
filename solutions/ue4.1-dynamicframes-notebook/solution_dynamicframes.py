@@ -10,11 +10,11 @@ Job vs. Notebook: der Job kapselt den Flow in Job.init/commit und liest Pfade
 CloudWatch-Log des Runs statt inline.
 
 Voraussetzungen: Catalog-DB raw mit Tabelle orders (Crawler Ü3.1), Rolle
-AWSGlueServiceRole-GfuGlueTraining, Bucket gfu-glue-training-<account>.
+AWSGlueServiceRole-GfuGlueTraining, Bucket gfu-glue-training-629452195361.
 
 Job-Parameter:
   --JOB_NAME      (Glue setzt dies automatisch)
-  --output_path   s3://gfu-glue-training-<account>/processed/orders_nb/
+  --output_path   s3://gfu-glue-training-629452195361/processed/orders_nb/
 Glue-Version: 5.0   Worker: G.1X
 """
 import sys

@@ -43,7 +43,7 @@ Dazu ein **named Catalog** `glue_catalog`, der Spark SQL an den Glue Data Catalo
 |---|---|
 | `spark.sql.extensions` | `org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions` |
 | `spark.sql.catalog.glue_catalog` | `org.apache.iceberg.spark.SparkCatalog` |
-| `spark.sql.catalog.glue_catalog.warehouse` | `s3://gfu-glue-training-<account>/processed/` |
+| `spark.sql.catalog.glue_catalog.warehouse` | `s3://gfu-glue-training-629452195361/processed/` |
 | `spark.sql.catalog.glue_catalog.catalog-impl` | `org.apache.iceberg.aws.glue.GlueCatalog` |
 | `spark.sql.catalog.glue_catalog.io-impl` | `org.apache.iceberg.aws.s3.S3FileIO` |
 
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS glue_catalog.processed.orders_iceberg (
     status      string
 )
 USING iceberg
-LOCATION 's3://gfu-glue-training-<account>/processed/orders_iceberg'
+LOCATION 's3://gfu-glue-training-629452195361/processed/orders_iceberg'
 TBLPROPERTIES ('format-version' = '2');
 ```
 

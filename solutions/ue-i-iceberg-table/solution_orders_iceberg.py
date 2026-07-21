@@ -20,11 +20,11 @@ Voraussetzungen (von der Infrastruktur bereitgestellt):
   - Catalog-DB `raw` mit Tabelle `orders` (Crawler aus Ü2.1/Ü3.1)
   - Catalog-DB `processed` (leer, vorab angelegt) — hier landet die Iceberg-Tabelle
   - IAM-Rolle `AWSGlueServiceRole-GfuGlueTraining` (S3 R/W + glue:CreateTable/UpdateTable)
-  - Bucket `gfu-glue-training-<account>`
+  - Bucket `gfu-glue-training-629452195361`
 
 Job-Parameter:
   --JOB_NAME          (Glue setzt dies automatisch)
-  --warehouse_path    s3://gfu-glue-training-<account>/processed/
+  --warehouse_path    s3://gfu-glue-training-629452195361/processed/
   --datalake-formats  iceberg   (lädt die Iceberg-Jars — im Job-Setup setzen!)
 Glue-Version: 5.0   Worker: G.1X
 

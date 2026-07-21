@@ -1,9 +1,8 @@
 """
-Ü-G — BEISPIEL/STARTER (Job-Variante): DynamoDB nativ schreiben & zurücklesen
+Ü-G — (Job-Variante): DynamoDB nativ schreiben & zurücklesen
 
 Job-Gegenstück zu `example.ipynb`. Anreicherung + Boilerplate stehen; den
 nativen DynamoDB-Write und den Scan-Read baust du an den TODO-Stellen.
-Vergleich danach mit `solution_dynamodb.py`.
 
 Job-Parameter: --JOB_NAME (automatisch), --customers_path, --ddb_table
 Glue-Version: 5.0   Worker: G.1X

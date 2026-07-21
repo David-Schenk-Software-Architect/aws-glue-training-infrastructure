@@ -64,7 +64,7 @@ S3-Layout (Pfad je Artefakt erhalten):
 Jeder Trainee hat zudem `scripts/<username>/{notebooks,scripts}/` für eigene Arbeit.
 
 - **Job-Skript** (`.py`): beim Job-Anlegen in Glue Studio die S3-Location referenzieren, z. B.
-  `s3://gfu-glue-training-<account>/scripts/solutions/ue5.1-orders-to-parquet-job/solution_orders_to_parquet.py`
+  `s3://gfu-glue-training-629452195361/scripts/solutions/ue5.1-orders-to-parquet-job/solution_orders_to_parquet.py`
   — oder Skriptinhalt in den *Script editor* einfügen. IAM-Rolle
   `AWSGlueServiceRole-GfuGlueTraining`, Glue 5.0, Job-Parameter setzen (siehe Header jeder
   Datei). Starter unter `scripts/examples/…`.
@@ -93,7 +93,7 @@ Alle Artefakte arbeiten gegen dieselben Seed-Daten aus `../data/`:
 | `customers.json` | `raw/customers/customers.json` | **10 Kunden** (C001–C010). Geschachtelt (`address`, `contacts[]`); `loyalty_points` **mischtypig** (`1200` vs `"gold"`/`"platinum"`); zwei leere `contacts:[]` (C003, C009) |
 | `serverlog.log` | `raw/serverlog/serverlog.log` | Zeilen-App-Log, **kein Built-in-Klassifizierer** parst es — Ü-D baut einen Grok-Custom-Classifier |
 
-Feste Namen aus dem Stack (siehe `tofu output`): Bucket `gfu-glue-training-<account>`,
+Feste Namen aus dem Stack (siehe `tofu output`): Bucket `gfu-glue-training-629452195361`,
 Catalog-DBs `raw`/`processed`, Glue-Rolle `AWSGlueServiceRole-GfuGlueTraining`,
 SFN-Rolle `StepFunctionsGlueExecutionRole-GfuGlueTraining`, Athena-Workgroup
 `gfu-glue-training`.

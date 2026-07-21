@@ -1,9 +1,9 @@
 """
-Ü-F — BEISPIEL/STARTER (Job-Variante): ResolveChoice, die vier Strategien
+Ü-F — (Job-Variante): ResolveChoice, die vier Strategien
 
 Job-Gegenstück zu `example.ipynb`. Die Quelle steht; setz die vier
 ResolveChoice-Strategien an den TODO-Stellen und vergleiche die Schemata im
-Run-Log. Vergleich danach mit `solution_resolvechoice.py`.
+Run-Log.
 
 Job-Parameter: --JOB_NAME (automatisch), --input_path
 Glue-Version: 5.0   Worker: G.1X

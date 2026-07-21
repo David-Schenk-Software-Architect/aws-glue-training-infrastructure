@@ -44,7 +44,7 @@ Glue → **Crawlers → Classifiers → Add classifier** → Typ **Grok**:
 
 Dann den Crawler anlegen:
 
-1. Data source: S3-Pfad `s3://gfu-glue-training-<account>/raw/serverlog/`.
+1. Data source: S3-Pfad `s3://gfu-glue-training-629452195361/raw/serverlog/`.
 2. **Custom classifiers**: den `serverlog`-Classifier hinzufügen (Reihenfolge zählt —
    Custom vor Built-in).
 3. IAM-Rolle `AWSGlueServiceRole-GfuGlueTraining`, Ziel-DB `raw`.
