@@ -25,6 +25,10 @@ locals {
   # Single source of truth for the parquet ref job name (also used by the ASL).
   ref_parquet_job_name = "ref-orders-to-parquet-solution"
 
+  # Der generische Job der crawler-gesteuerten State Machine (Folie 7.8): eine
+  # Tabelle je Lauf, Tabellenname kommt zur Laufzeit aus der Map.
+  ref_table_job_name = "ref-table-to-parquet-solution"
+
   reference_jobs = {
     (local.ref_parquet_job_name) = {
       script_key = aws_s3_object.solution_scripts["ue5.1-orders-to-parquet-job/solution_orders_to_parquet.py"].key
@@ -57,6 +61,14 @@ locals {
         "--datalake-formats" = "iceberg"
       }
     }
+    # Folie 7.8: liest raw.<table> und schreibt processed/<table>/. --table setzt
+    # NICHT der Job-Default, sondern die Step-Functions-Map pro Iteration.
+    (local.ref_table_job_name) = {
+      script_key = aws_s3_object.solution_scripts["block7-crawler-driven-pipeline/solution_table_to_parquet.py"].key
+      arguments = {
+        "--output_root" = "s3://${aws_s3_bucket.lake.bucket}/processed/"
+      }
+    }
   }
 }
 
@@ -73,6 +85,14 @@ resource "aws_glue_job" "reference" {
     name            = "glueetl"
     python_version  = "3"
     script_location = "s3://${aws_s3_bucket.lake.bucket}/${each.value.script_key}"
+  }
+
+  # Default waere 1. Die Map in ref-crawler-pipeline-solution faechert je Tabelle
+  # einen Lauf DESSELBEN Jobs auf — bei 1 wuerde jeder zweite Lauf sofort mit
+  # ConcurrentRunsExceededException abbrechen. Gilt fuer alle Ref-Jobs; harmlos,
+  # weil sie sonst ohnehin einzeln laufen.
+  execution_property {
+    max_concurrent_runs = 5
   }
 
   default_arguments = merge(
@@ -114,6 +134,130 @@ resource "aws_sfn_state_machine" "reference" {
         Type  = "Fail"
         Error = "GlueJobFailed"
         Cause = "Referenz-Job fehlgeschlagen - siehe Glue-Run-Details / CloudWatch."
+      }
+      Done = { Type = "Succeed" }
+    }
+  })
+}
+
+# ── Crawler-gesteuerte State Machine (Folie 7.8 / Abb. 17, instructor-only) ──
+# Die lauffaehige Fassung der Zeichnung auf Folie 7.8: derselbe Ablauf wie der
+# Glue Workflow weiter unten, aber in Step Functions. Kein Uebungsartefakt —
+# Vorfuehrmaterial zur Folie. Gleiches Gate und Namensschema wie der Rest.
+#
+# Quelle mit den LIVE-Namen (und der ausfuehrlichen Begruendung) liegt als
+# solutions/block7-crawler-driven-pipeline/example_crawler_pipeline.asl.json im
+# Repo und wird nach scripts/examples/ gestaged; hier steht dieselbe Kette,
+# retargetet auf die ref-…-solution-Namen. Aenderungen gehoeren in beide.
+
+# Der Crawler, dessen Fund die Map fuellt. Zwei Targets, damit er mehr als EINE
+# Tabelle findet — sonst faechert die Map ueber ein Element auf und die Pointe
+# der Folie ist weg. raw/serverlog/ bleibt bewusst draussen: kein Built-in-
+# Klassifizierer parst es (das ist Ü-D), es wuerde eine Schrott-Tabelle liefern.
+# ON-DEMAND (kein 'schedule') — die State Machine startet ihn.
+resource "aws_glue_crawler" "crawler_pipeline_raw" {
+  count = var.enable_reference_jobs ? 1 : 0
+
+  name          = "ref-raw-all-crawler-solution"
+  role          = aws_iam_role.glue.arn
+  database_name = aws_glue_catalog_database.raw.name
+
+  s3_target {
+    path = "s3://${aws_s3_bucket.lake.bucket}/raw/orders/"
+  }
+
+  s3_target {
+    path = "s3://${aws_s3_bucket.lake.bucket}/raw/customers/"
+  }
+}
+
+resource "aws_sfn_state_machine" "crawler_pipeline" {
+  count = var.enable_reference_jobs ? 1 : 0
+
+  name     = "ref-crawler-pipeline-solution"
+  role_arn = aws_iam_role.step_functions.arn
+
+  definition = jsonencode({
+    Comment = "Folie 7.8 / Abb. 17 - Crawler starten, Status pollen, Tabellenliste holen, je Tabelle ein Job-Run."
+    StartAt = "StartCrawler"
+    # Falls der Crawler nie READY meldet, bricht der Lauf nach 30 min ab statt
+    # ewig zu pollen.
+    TimeoutSeconds = 1800
+    States = {
+      # SDK-Integration, KEIN '.sync': eine optimierte Glue-Integration gibt es
+      # nur fuer startJobRun. Dieser Task ist sofort fertig, waehrend der
+      # Crawler noch laeuft — deshalb ueberhaupt die Poll-Schleife.
+      StartCrawler = {
+        Type       = "Task"
+        Resource   = "arn:aws:states:::aws-sdk:glue:startCrawler"
+        Parameters = { Name = aws_glue_crawler.crawler_pipeline_raw[0].name }
+        Next       = "WaitForCrawler"
+      }
+      WaitForCrawler = {
+        Type    = "Wait"
+        Seconds = 30
+        Next    = "GetCrawler"
+      }
+      # Name als Konstante, nicht aus dem State-Input: die getCrawler-Antwort
+      # ERSETZT den State, in Runde 2 waere der Name sonst weg.
+      GetCrawler = {
+        Type       = "Task"
+        Resource   = "arn:aws:states:::aws-sdk:glue:getCrawler"
+        Parameters = { Name = aws_glue_crawler.crawler_pipeline_raw[0].name }
+        Next       = "CrawlerReady"
+      }
+      # Choice ruft keinen Service — es vergleicht nur Felder im State-Input.
+      CrawlerReady = {
+        Type = "Choice"
+        Choices = [{
+          Variable     = "$.Crawler.State"
+          StringEquals = "READY"
+          Next         = "GetTables"
+        }]
+        Default = "WaitForCrawler"
+      }
+      # Der Crawler gibt keine Tabellennamen zurueck (GetCrawlerMetrics liefert
+      # nur Anzahlen) — die Liste kommt aus dem Katalog.
+      GetTables = {
+        Type       = "Task"
+        Resource   = "arn:aws:states:::aws-sdk:glue:getTables"
+        Parameters = { DatabaseName = aws_glue_catalog_database.raw.name }
+        Next       = "RunJobPerTable"
+      }
+      RunJobPerTable = {
+        Type           = "Map"
+        ItemsPath      = "$.TableList"
+        MaxConcurrency = 2
+        Iterator = {
+          StartAt = "RunGlueJob"
+          States = {
+            RunGlueJob = {
+              Type     = "Task"
+              Resource = "arn:aws:states:::glue:startJobRun.sync"
+              Parameters = {
+                JobName = aws_glue_job.reference[local.ref_table_job_name].name
+                # Im Iterator IST das Item der State-Input, daher '$.Name'.
+                Arguments = { "--table.$" = "$.Name" }
+              }
+              Retry = [{
+                ErrorEquals     = ["Glue.ConcurrentRunsExceededException"]
+                IntervalSeconds = 15
+                MaxAttempts     = 3
+                BackoffRate     = 2.0
+              }]
+              End = true
+            }
+          }
+        }
+        # Catch haengt am Map-State, nicht am inneren Task: ein gescheiterter
+        # Job soll den ganzen Lauf in den Fail-State fuehren (so die Folie).
+        Catch = [{ ErrorEquals = ["States.ALL"], Next = "PipelineFailed" }]
+        Next  = "Done"
+      }
+      PipelineFailed = {
+        Type  = "Fail"
+        Error = "PipelineFailed"
+        Cause = "Crawler- oder Job-Schritt fehlgeschlagen - siehe Execution-Historie / CloudWatch."
       }
       Done = { Type = "Succeed" }
     }

@@ -1,0 +1,91 @@
+{
+  "Comment": "Folie 7.8 / Abb. 17 - der Glue Workflow aus Abb. 16, als State Machine nachgebaut. Crawler starten, Status pollen, Tabellenliste holen, je Tabelle einen Job-Run. WARUM die Poll-Schleife: eine optimierte Glue-Integration ('.sync', wartet auf das Ende) gibt es NUR fuer startJobRun - startCrawler ist SDK-Integration und ist sofort fertig, waehrend der Crawler noch laeuft. WARUM GetTables: der Crawler gibt keine Tabellennamen zurueck, GetCrawlerMetrics liefert nur Anzahlen. Namen wie live in der Sandbox gebaut (raw-crawler, s3-to-parquet); die Terraform-Fassung in glue.tf (aws_sfn_state_machine.crawler_pipeline) ist inhaltlich dieselbe Kette, retargetet auf die ref-...-solution-Namen - Aenderungen hier gehoeren auch dorthin. Ausfuehrungsrolle: StepFunctionsGlueExecutionRole-GfuGlueTraining.",
+  "StartAt": "StartCrawler",
+  "TimeoutSeconds": 1800,
+  "States": {
+    "StartCrawler": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Parameters": {
+        "Name": "raw-crawler"
+      },
+      "Next": "WaitForCrawler"
+    },
+    "WaitForCrawler": {
+      "Type": "Wait",
+      "Seconds": 30,
+      "Next": "GetCrawler"
+    },
+    "GetCrawler": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:glue:getCrawler",
+      "Parameters": {
+        "Name": "raw-crawler"
+      },
+      "Next": "CrawlerReady"
+    },
+    "CrawlerReady": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.Crawler.State",
+          "StringEquals": "READY",
+          "Next": "GetTables"
+        }
+      ],
+      "Default": "WaitForCrawler"
+    },
+    "GetTables": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:glue:getTables",
+      "Parameters": {
+        "DatabaseName": "raw"
+      },
+      "Next": "RunJobPerTable"
+    },
+    "RunJobPerTable": {
+      "Type": "Map",
+      "ItemsPath": "$.TableList",
+      "MaxConcurrency": 2,
+      "Iterator": {
+        "StartAt": "RunGlueJob",
+        "States": {
+          "RunGlueJob": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::glue:startJobRun.sync",
+            "Parameters": {
+              "JobName": "s3-to-parquet",
+              "Arguments": {
+                "--table.$": "$.Name"
+              }
+            },
+            "Retry": [
+              {
+                "ErrorEquals": ["Glue.ConcurrentRunsExceededException"],
+                "IntervalSeconds": 15,
+                "MaxAttempts": 3,
+                "BackoffRate": 2.0
+              }
+            ],
+            "End": true
+          }
+        }
+      },
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "PipelineFailed"
+        }
+      ],
+      "Next": "Done"
+    },
+    "PipelineFailed": {
+      "Type": "Fail",
+      "Error": "PipelineFailed",
+      "Cause": "Crawler- oder Job-Schritt fehlgeschlagen - siehe Execution-Historie / CloudWatch."
+    },
+    "Done": {
+      "Type": "Succeed"
+    }
+  }
+}

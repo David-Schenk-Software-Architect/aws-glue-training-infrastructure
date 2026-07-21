@@ -16,7 +16,7 @@ from the caller's credentials / repo secrets at deploy time.
 | Seed data | `raw/orders/orders.csv`, `raw/customers/customers.json`, `seed/orders_2.csv` | Ü3.1, Ü6.1, Ü8.1 |
 | Reference artifacts | `solutions/**` staged to `scripts/examples/` (trainee-readable) and `scripts/solutions/` (trainee-hidden) | Ü4.1, Ü5.1, Ü6.1, Ü7.2, Ü8.1, Ü9.A |
 | Trainee workspaces | `scripts/<username>/{notebooks,scripts}/` per trainee (read+write) | all |
-| Reference jobs + state machine + Glue Workflow *(`enable_reference_jobs`, default off)* | `ref-…-solution` jobs, `ref-orders-pipeline-solution` state machine, `ref-orders-workflow-solution` workflow | Ü5.1, Ü7.2, Ü7.7, Ü8.1, Ü9.A |
+| Reference jobs + state machines + Glue Workflow *(`enable_reference_jobs`, default off)* | `ref-…-solution` jobs, state machines `ref-orders-pipeline-solution` (Ü7.2) and `ref-crawler-pipeline-solution` (Folie 7.8), workflow `ref-orders-workflow-solution`, crawler `ref-raw-all-crawler-solution` | Ü5.1, Ü7.2, Ü7.7, Ü8.1, Ü9.A + Folie 7.8 |
 | IAM role `AWSGlueServiceRole-GfuGlueTraining` | crawlers, jobs, interactive sessions | Ü3.1–Ü8.x |
 | IAM role `StepFunctionsGlueExecutionRole-GfuGlueTraining` | Step Functions → Glue | Ü7.2 |
 | Athena workgroup `gfu-glue-training` | query-result location set | Ü3.1, Ü5.1 |
@@ -59,6 +59,19 @@ crawler(processed), the runnable counterpart to the Terraform slide 7.4b). Off b
 because these pre-empt the live-built exercises — the trainee builds the Ü7.2 state
 machine and the Ü7.7 workflow from scratch, and when enabled the reference resources are
 visible in every trainee's Glue console. Flip to `true` only to hand out live references.
+
+The same gate also deploys the **crawler-driven state machine of slide 7.8**
+(`ref-crawler-pipeline-solution`) — the runnable version of Abb. 17, and the only
+reference resource that belongs to a *slide* rather than an exercise. It rebuilds the
+Glue-Workflow chain in Step Functions: `glue:startCrawler` → `Wait 30s` →
+`glue:getCrawler` → `Choice State = READY?` (loop) → `glue:getTables` → `Map`, one
+`glue:startJobRun.sync` per table found. Two resources exist only for it: the crawler
+`ref-raw-all-crawler-solution` (targets `raw/orders/` **and** `raw/customers/`, so the
+Map fans out over more than one element) and the generic job
+`ref-table-to-parquet-solution` (`--table` comes from the Map, not from the job
+defaults). The poll loop is not a detour — Step Functions' optimized Glue integration
+covers `startJobRun` only, so a crawler has to be polled; and since the crawler returns
+no table names (`GetCrawlerMetrics` yields counts only), `getTables` supplies the list.
 
 ## Deployment (CI/CD)
 

@@ -57,6 +57,28 @@ gemäß Notion-Block wählen.
 > Get/Put, kein Löschen). **Ü-G** braucht `enable_dynamodb` (default an) und die
 > DynamoDB-Rechte der Glue-Rolle (`gfu-glue-dynamodb`, ergänzt in `iam.tf`).
 
+### Folienreferenz (keine Übung)
+
+| Folie | Thema | Artefakte | Typ |
+|---|---|---|---|
+| **7.8** (Abb. 17) | Der Glue Workflow als State Machine, crawler-gesteuert | `block7-crawler-driven-pipeline/example_crawler_pipeline.asl.json` **+** `…/solution_table_to_parquet.py` | ASL **+** generischer Job |
+
+Einziges Artefakt, das zu einer **Folie** gehört und nicht zu einer Übung — daher der
+abweichende Ordnername ohne `üX.Y`-Präfix. Die ASL ist die lauffähige Fassung der
+Zeichnung: Crawler starten, Status pollen (`Wait` + `Choice`, weil es für Crawler kein
+`.sync` gibt), Tabellenliste per `getTables` holen (der Crawler selbst gibt keine Namen
+zurück), dann `Map` — je gefundener Tabelle ein Lauf **desselben** Jobs, Tabellenname als
+`--table`. Deshalb ist `solution_table_to_parquet.py` bewusst generisch: kein
+`ApplyMapping`, keine `partitionKeys`, nur `resolveChoice` gegen die Mischtypen in
+`customers`.
+
+Bei `enable_reference_jobs` ist die Kette als `ref-crawler-pipeline-solution` deployed
+(mit Crawler `ref-raw-all-crawler-solution` über `raw/orders/` **und** `raw/customers/`,
+damit die Map über mehr als ein Element aufächert, und Job
+`ref-table-to-parquet-solution`). Die Terraform-Fassung in `glue.tf` ist inhaltlich
+dieselbe Kette, nur auf die `ref-…`-Namen retargetet — **Änderungen gehören in beide
+Dateien.**
+
 ## In die Sandbox laden
 
 S3-Layout (Pfad je Artefakt erhalten):

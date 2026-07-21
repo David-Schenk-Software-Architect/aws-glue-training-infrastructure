@@ -187,6 +187,23 @@ data "aws_iam_policy_document" "sfn_inline" {
     ]
     resources = ["*"]
   }
+
+  # Fuer die crawler-gesteuerte State Machine (Folie 7.8). Diese Schritte laufen
+  # als SDK-Integration (arn:aws:states:::aws-sdk:glue:…) — Step Functions ruft
+  # die Glue-API direkt, ein '.sync' gibt es fuer Crawler nicht, deshalb pollt
+  # die Maschine selbst mit GetCrawler. GetTables liefert die Tabellenliste, die
+  # der Crawler selbst nicht zurueckgibt.
+  statement {
+    sid = "CrawlerControl"
+    actions = [
+      "glue:StartCrawler",
+      "glue:GetCrawler",
+      "glue:GetCrawlers",
+      "glue:GetTables",
+      "glue:GetDatabase",
+    ]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_role_policy" "sfn_inline" {

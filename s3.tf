@@ -91,14 +91,21 @@ locals {
   solutions_dir = "${path.module}/solutions"
 
   # examples ← example* + broken/**   ;   solutions ← solution* + fixed/**
-  example_files = toset(concat(
-    tolist(fileset(local.solutions_dir, "**/example*")),
-    tolist(fileset(local.solutions_dir, "**/broken/**")),
-  ))
-  solution_files = toset(concat(
-    tolist(fileset(local.solutions_dir, "**/solution*")),
-    tolist(fileset(local.solutions_dir, "**/fixed/**")),
-  ))
+  # __pycache__/ fliegt raus: die Globs greifen sonst auch
+  # <übung>/__pycache__/example_*.cpython-*.pyc — gitignored, aber lokal
+  # vorhanden, ein Apply vom Entwicklerrechner lüde Bytecode in die Sandbox.
+  example_files = toset([
+    for f in concat(
+      tolist(fileset(local.solutions_dir, "**/example*")),
+      tolist(fileset(local.solutions_dir, "**/broken/**")),
+    ) : f if !strcontains(f, "__pycache__/")
+  ])
+  solution_files = toset([
+    for f in concat(
+      tolist(fileset(local.solutions_dir, "**/solution*")),
+      tolist(fileset(local.solutions_dir, "**/fixed/**")),
+    ) : f if !strcontains(f, "__pycache__/")
+  ])
 
   # content_type keyed by the last dotted segment (handles *.asl.json → "json").
   script_content_types = {
