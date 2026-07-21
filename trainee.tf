@@ -35,6 +35,12 @@ locals {
     "arn:aws:iam::aws:policy/AWSStepFunctionsFullAccess",
     "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
     "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess",
+    # Ü8.3 (monitoring): CloudWatchLogsFullAccess covers logs but NOT metrics —
+    # without cloudwatch:ListMetrics the metric explorer can't browse the Glue
+    # namespace, so picking a metric for an alarm is guesswork. Note that
+    # PutMetricAlarm/DescribeAlarms already arrive incidentally via
+    # AmazonAthenaFullAccess; this policy adds the read side that makes them usable.
+    "arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess",
     "arn:aws:iam::aws:policy/IAMReadOnlyAccess",
   ]
 

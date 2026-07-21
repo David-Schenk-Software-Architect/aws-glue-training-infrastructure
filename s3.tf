@@ -51,6 +51,10 @@ resource "aws_s3_object" "prefixes" {
 #                customer_ids consistent with customers.json, dates overlap orders.csv)
 # orders_2.csv → seed/ (NOT raw/orders/ — the participant copies it in during
 #                Ü8.1 to trigger the incremental bookmark run)
+# orders_bad.csv → raw/orders_bad/ (Ü8.3 diagnose source: same schema as
+#                orders.csv but one row carries "n/a" in `order total`, which
+#                kills the UDF inside an executor. Landed directly — Ü8.3 starts
+#                at the diagnosis, not at the setup, and stays independent of Ü8.1.)
 # serverlog.log → raw/serverlog/ (Ü-D custom-classifier source: app log no built-in
 #                classifier parses; the trainee builds a Grok classifier)
 
@@ -80,6 +84,13 @@ resource "aws_s3_object" "orders_2_seed" {
   key    = "seed/orders_2.csv"
   source = "${path.module}/data/orders_2.csv"
   etag   = filemd5("${path.module}/data/orders_2.csv")
+}
+
+resource "aws_s3_object" "orders_bad" {
+  bucket = aws_s3_bucket.lake.id
+  key    = "raw/orders_bad/orders_bad.csv"
+  source = "${path.module}/data/orders_bad.csv"
+  etag   = filemd5("${path.module}/data/orders_bad.csv")
 }
 
 resource "aws_s3_object" "serverlog" {
