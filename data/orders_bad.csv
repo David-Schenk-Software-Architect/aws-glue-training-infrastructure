@@ -1,0 +1,11 @@
+cust id,order total,order date,status
+C001,88.40,2026-06-20,shipped
+C002,15.00,2026-06-20,delivered
+C003,240.75,2026-06-21,shipped
+C001,63.20,2026-06-21,cancelled
+C004,102.10,2026-06-22,shipped
+C002,n/a,2026-06-22,shipped
+C003,19.99,2026-06-23,delivered
+C001,310.00,2026-06-23,shipped
+C004,45.60,2026-06-24,shipped
+C002,77.80,2026-06-24,delivered

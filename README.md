@@ -13,7 +13,7 @@ from the caller's credentials / repo secrets at deploy time.
 | Resource | Purpose | Exercises |
 |---|---|---|
 | S3 bucket `gfu-glue-training-<account>` | `raw/ processed/ temp/ athena-results/ seed/` | all |
-| Seed data | `raw/orders/orders.csv`, `raw/customers/customers.json`, `seed/orders_2.csv` | Ü3.1, Ü6.1, Ü8.1 |
+| Seed data | `raw/orders/orders.csv`, `raw/customers/customers.json`, `seed/orders_2.csv`, `raw/orders_bad/orders_bad.csv` | Ü3.1, Ü6.1, Ü8.1, Ü8.3 |
 | Reference artifacts | `solutions/**` staged to `scripts/examples/` (trainee-readable) and `scripts/solutions/` (trainee-hidden) | Ü4.1, Ü5.1, Ü6.1, Ü7.2, Ü8.1, Ü9.A |
 | Trainee workspaces | `scripts/<username>/{notebooks,scripts}/` per trainee (read+write) | all |
 | Reference jobs + state machines + Glue Workflow *(`enable_reference_jobs`, default off)* | `ref-…-solution` jobs, state machines `ref-orders-pipeline-solution` (Ü7.2) and `ref-crawler-pipeline-solution` (Folie 7.8), workflow `ref-orders-workflow-solution`, crawler `ref-raw-all-crawler-solution` | Ü5.1, Ü7.2, Ü7.7, Ü8.1, Ü9.A + Folie 7.8 |
@@ -21,6 +21,7 @@ from the caller's credentials / repo secrets at deploy time.
 | IAM role `StepFunctionsGlueExecutionRole-GfuGlueTraining` | Step Functions → Glue | Ü7.2 |
 | Athena workgroup `gfu-glue-training` | query-result location set | Ü3.1, Ü5.1 |
 | Glue Catalog DBs `raw`, `processed` | catalog targets | Ü3.1, Ü5.1 |
+| Glue Catalog table `raw.orders_bad` | pre-catalogued diagnose source (no crawler — the exercise starts at the diagnosis) | Ü8.3 |
 | KMS CMK *(optional, `enable_kms`, default off)* | Security Configuration | Ü8.2 |
 | DynamoDB table *(optional, `enable_dynamodb`, default on)* | Block 9 second target | Block 9 |
 | IAM users (`trainee_usernames`, default 1) | attendee console + CLI logins (scoped S3, broad Glue/Athena) | all |

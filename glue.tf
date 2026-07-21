@@ -13,6 +13,61 @@ resource "aws_glue_catalog_database" "processed" {
   description = "GFU Glue training – processed Parquet output tables."
 }
 
+# ── Ü8.3 source table (pre-catalogued on purpose) ────────────────────────────
+# Every other source table in this training is catalogued by a crawler the
+# attendee builds. This one is not: Ü8.3 is the monitoring/diagnosis exercise,
+# and a crawler run in front of it would only cost time without teaching
+# anything new (crawlers are Block 3). Pre-cataloguing keeps the exercise
+# starting where its lesson is and keeps it independent of Ü8.1.
+#
+# Schema mirrors the crawler's output for orders.csv — dirty column names with
+# spaces, everything string.
+
+resource "aws_glue_catalog_table" "orders_bad" {
+  name          = "orders_bad"
+  database_name = aws_glue_catalog_database.raw.name
+  table_type    = "EXTERNAL_TABLE"
+
+  parameters = {
+    classification           = "csv"
+    "skip.header.line.count" = "1"
+    delimiter                = ","
+    EXTERNAL                 = "TRUE"
+  }
+
+  storage_descriptor {
+    location      = "s3://${aws_s3_bucket.lake.bucket}/raw/orders_bad/"
+    input_format  = "org.apache.hadoop.mapred.TextInputFormat"
+    output_format = "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+
+    ser_de_info {
+      serialization_library = "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"
+      parameters = {
+        "field.delim" = ","
+      }
+    }
+
+    columns {
+      name = "cust id"
+      type = "string"
+    }
+    columns {
+      name = "order total"
+      type = "string"
+    }
+    columns {
+      name = "order date"
+      type = "string"
+    }
+    columns {
+      name = "status"
+      type = "string"
+    }
+  }
+
+  depends_on = [aws_s3_object.orders_bad]
+}
+
 # ── Reference Glue jobs + Step Functions (instructor-only) ───────────────────
 # Gated behind enable_reference_jobs (default off). Registers the SOLUTION scripts
 # as runnable Glue jobs, the solution ASL as a state machine, and the reference
@@ -43,6 +98,18 @@ locals {
         "--job-bookmark-option"              = "job-bookmark-enable"
         "--enable-continuous-cloudwatch-log" = "true"
         "--enable-metrics"                   = "true"
+      }
+    }
+    # Ü8.3: die reparierte Fassung des Diagnose-Jobs. Der KAPUTTE Job wird
+    # bewusst nicht registriert — den legt der Teilnehmer aus
+    # scripts/examples/ selbst an, sonst ist die Übung vorweggenommen.
+    "ref-orders-diagnose-solution" = {
+      script_key = aws_s3_object.solution_scripts["ue8.3-diagnose-job/fixed/diagnose_orders.py"].key
+      arguments = {
+        "--output_path"                  = "s3://${aws_s3_bucket.lake.bucket}/processed/orders_diagnosed/"
+        "--enable-job-insights"          = "true"
+        "--enable-metrics"               = "true"
+        "--enable-observability-metrics" = "true"
       }
     }
     "ref-orders-enriched-solution" = {
