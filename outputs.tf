@@ -8,6 +8,7 @@ output "s3_paths" {
   value = {
     raw_orders       = "s3://${aws_s3_bucket.lake.bucket}/raw/orders/"
     raw_customers    = "s3://${aws_s3_bucket.lake.bucket}/raw/customers/"
+    raw_events       = "s3://${aws_s3_bucket.lake.bucket}/raw/events/"
     processed        = "s3://${aws_s3_bucket.lake.bucket}/processed/"
     scripts_examples = "s3://${aws_s3_bucket.lake.bucket}/scripts/examples/"
     temp             = "s3://${aws_s3_bucket.lake.bucket}/temp/"

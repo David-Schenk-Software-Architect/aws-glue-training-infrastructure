@@ -46,6 +46,9 @@ resource "aws_s3_object" "prefixes" {
 # ── Seed datasets ────────────────────────────────────────────────────────────
 # orders.csv  → raw/orders/   (Ü3.1 source; reused in Ü4.1, Ü5.1, Block 9)
 # customers.json → raw/customers/ (Ü6.1 nested-JSON source; second Block 9 source)
+# events.json → raw/events/ (Block 9 capstone source: NEW nested clickstream, never
+#                used in B1–B8; view/add_to_cart/purchase, price as string (Choice),
+#                customer_ids consistent with customers.json, dates overlap orders.csv)
 # orders_2.csv → seed/ (NOT raw/orders/ — the participant copies it in during
 #                Ü8.1 to trigger the incremental bookmark run)
 # serverlog.log → raw/serverlog/ (Ü-D custom-classifier source: app log no built-in
@@ -63,6 +66,13 @@ resource "aws_s3_object" "customers" {
   key    = "raw/customers/customers.json"
   source = "${path.module}/data/customers.json"
   etag   = filemd5("${path.module}/data/customers.json")
+}
+
+resource "aws_s3_object" "events" {
+  bucket = aws_s3_bucket.lake.id
+  key    = "raw/events/events.json"
+  source = "${path.module}/data/events.json"
+  etag   = filemd5("${path.module}/data/events.json")
 }
 
 resource "aws_s3_object" "orders_2_seed" {
