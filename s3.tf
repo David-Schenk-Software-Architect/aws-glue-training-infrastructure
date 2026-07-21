@@ -128,6 +128,29 @@ resource "aws_s3_object" "solution_scripts" {
   content_type = lookup(local.script_content_types, element(reverse(split(".", each.value)), 0), "application/octet-stream")
 }
 
+# ── Blueprint seed (Ü7.3, optional) ──────────────────────────────────────────
+# A Glue Blueprint is a ZIP of layout.py + blueprint.cfg. The AWS provider has NO
+# aws_glue_blueprint resource, so the stack only STAGES the ZIP in S3 (built at
+# apply from the source dir); the trainee registers + runs it in the console
+# (CreateBlueprint / StartBlueprintRun). It lives under scripts/examples/ so the
+# scoped trainee policy already grants read access; the two source files match
+# none of the example*/solution*/broken/fixed globs above, so they are not
+# double-seeded as loose scripts.
+
+data "archive_file" "blueprint" {
+  type        = "zip"
+  source_dir  = "${path.module}/solutions/ue7.3-blueprint/blueprint"
+  output_path = "${path.module}/.build/orders-pipeline-blueprint.zip"
+}
+
+resource "aws_s3_object" "blueprint" {
+  bucket       = aws_s3_bucket.lake.id
+  key          = "scripts/examples/blueprints/orders-pipeline.zip"
+  source       = data.archive_file.blueprint.output_path
+  etag         = data.archive_file.blueprint.output_md5
+  content_type = "application/zip"
+}
+
 # ── Per-trainee workspaces ───────────────────────────────────────────────────
 # One folder per trainee with notebooks/ + scripts/ sub-prefixes where they save
 # their own work. All trainees can see all trainee folders (shared policy).

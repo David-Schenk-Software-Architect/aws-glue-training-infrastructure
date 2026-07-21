@@ -6,6 +6,12 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.60"
     }
+    # Zips the Ü7.3 blueprint source (layout.py + blueprint.cfg) at apply time,
+    # so no binary ZIP is committed. See aws_s3_object.blueprint in s3.tf.
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2.4"
+    }
   }
 
   # Remote state so the CI pipeline is idempotent across runs. Native S3 locking

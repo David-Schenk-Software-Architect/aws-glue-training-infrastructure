@@ -7,6 +7,8 @@ __pycache__/
 
 # OpenTofu / Terraform
 .terraform/
+# archive_file build output (blueprint ZIP, regenerated at apply)
+.build/
 # .terraform.lock.hcl is committed on purpose (pinned provider hashes for reproducible CI)
 *.tfstate
 *.tfstate.*
