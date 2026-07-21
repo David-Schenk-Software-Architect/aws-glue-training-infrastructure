@@ -4,7 +4,7 @@
 Job-Gegenstück zu `example.ipynb`. Anreicherung + Boilerplate stehen; den
 nativen DynamoDB-Write und den Scan-Read baust du an den TODO-Stellen.
 
-Job-Parameter: --JOB_NAME (automatisch), --customers_path, --ddb_table
+Job-Parameter: --JOB_NAME (automatisch), --ddb_table
 Glue-Version: 5.0   Worker: G.1X
 """
 import sys
@@ -17,7 +17,7 @@ from pyspark.context import SparkContext
 from pyspark.sql.functions import col, row_number
 from pyspark.sql.window import Window
 
-args = getResolvedOptions(sys.argv, ["JOB_NAME", "customers_path", "ddb_table"])
+args = getResolvedOptions(sys.argv, ["JOB_NAME", "ddb_table"])
 
 sc = SparkContext()
 glue_context = GlueContext(sc)
@@ -28,10 +28,8 @@ job.init(args["JOB_NAME"], args)
 orders = glue_context.create_dynamic_frame.from_catalog(
     database="raw", table_name="orders", transformation_ctx="orders"
 ).toDF()
-customers = glue_context.create_dynamic_frame.from_options(
-    connection_type="s3",
-    connection_options={"paths": [args["customers_path"]]},
-    format="json", transformation_ctx="customers",
+customers = glue_context.create_dynamic_frame.from_catalog(
+    database="raw", table_name="customers", transformation_ctx="customers"
 ).toDF()
 
 o = orders.selectExpr(

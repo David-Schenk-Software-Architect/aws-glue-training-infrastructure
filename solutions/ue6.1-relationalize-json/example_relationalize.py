@@ -34,7 +34,10 @@ customers.printSchema()
 
 # TODO 3: frames.select("customers") und frames.select("customers_contacts")
 
-# TODO 4: beide .toDF().write.mode("overwrite").parquet(
-#         <output_path>/customers_root/ bzw. /customers_contacts/)
+# TODO 4: root und contacts je in einer eigenen Senke schreiben — getSink +
+#         setCatalogInfo(catalogDatabase="processed", catalogTableName=...) mit
+#         enableUpdateCatalog=True, setFormat("glueparquet"), writeFrame(...).
+#         Pfade: <output_path>/customers_root/ bzw. /customers_contacts/.
+#         So landet jede Tabelle als Parquet in S3 UND direkt im Data Catalog.
 
 job.commit()

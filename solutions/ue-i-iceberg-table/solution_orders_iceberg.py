@@ -100,4 +100,23 @@ print("orders_iceberg rows:", count)  # erwartet: 48
 print("Snapshots:")
 spark.sql("SELECT snapshot_id, operation FROM glue_catalog.processed.orders_iceberg.snapshots").show(truncate=False)
 
+# 5) Compaction. Der INSERT oben schreibt viele kleine Dateien (ein Task je Spark-
+#    Partition) — der klassische Small-Files-Fall. Erst zählen, dann rewrite_data_files
+#    (bin-pack) zusammenpacken, dann erneut zählen: die Datei-Zahl fällt sichtbar.
+#    .files ist die Iceberg-Metadaten-Tabelle (wie .snapshots). In Athena entspricht das
+#    OPTIMIZE ... REWRITE DATA USING BIN_PACK (Slide 3.UeIa / Performance-Spickzettel).
+files_before = spark.sql(
+    "SELECT count(*) AS n FROM glue_catalog.processed.orders_iceberg.files"
+).collect()[0]["n"]
+print("Datendateien vor Compaction:", files_before)
+
+spark.sql(
+    "CALL glue_catalog.system.rewrite_data_files(table => 'processed.orders_iceberg')"
+).show(truncate=False)
+
+files_after = spark.sql(
+    "SELECT count(*) AS n FROM glue_catalog.processed.orders_iceberg.files"
+).collect()[0]["n"]
+print("Datendateien nach Compaction:", files_after)  # deutlich weniger, i. d. R. 1
+
 job.commit()

@@ -1,17 +1,16 @@
 """
 Ü-G — LÖSUNG (Job-Variante): DynamoDB nativ schreiben & zurücklesen
 
-Job-Gegenstück zum Notebook `solution.ipynb`. raw.orders × customers.json
+Job-Gegenstück zum Notebook `solution.ipynb`. raw.orders × raw.customers
 angereichert, je Kunde eine Zeile (Hash-Key customer_id eindeutig) nativ nach
 DynamoDB geschrieben und per Scan-API zurückgelesen.
 
 Voraussetzungen: enable_dynamodb (default an) + DynamoDB-Rechte der Glue-Rolle;
 Tabelle gfu-glue-training-orders-enriched (hash_key customer_id, PAY_PER_REQUEST);
-Catalog-DB raw mit orders; customers.json unter raw/customers/.
+Catalog-DB raw mit Tabellen orders und customers (Crawler).
 
 Job-Parameter:
   --JOB_NAME         (automatisch)
-  --customers_path   s3://gfu-glue-training-629452195361/raw/customers/
   --ddb_table        gfu-glue-training-orders-enriched
 Glue-Version: 5.0   Worker: G.1X
 """
@@ -25,7 +24,7 @@ from pyspark.context import SparkContext
 from pyspark.sql.functions import col, row_number
 from pyspark.sql.window import Window
 
-args = getResolvedOptions(sys.argv, ["JOB_NAME", "customers_path", "ddb_table"])
+args = getResolvedOptions(sys.argv, ["JOB_NAME", "ddb_table"])
 
 sc = SparkContext()
 glue_context = GlueContext(sc)
@@ -36,10 +35,8 @@ job.init(args["JOB_NAME"], args)
 orders = glue_context.create_dynamic_frame.from_catalog(
     database="raw", table_name="orders", transformation_ctx="orders"
 ).toDF()
-customers = glue_context.create_dynamic_frame.from_options(
-    connection_type="s3",
-    connection_options={"paths": [args["customers_path"]]},
-    format="json", transformation_ctx="customers",
+customers = glue_context.create_dynamic_frame.from_catalog(
+    database="raw", table_name="customers", transformation_ctx="customers"
 ).toDF()
 
 # Rohspalten haben Leerzeichen -> sauber benennen/casten

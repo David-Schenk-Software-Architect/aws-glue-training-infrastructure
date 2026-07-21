@@ -47,10 +47,34 @@ print("erzeugte Frames:", frames.keys())
 root = frames.select("customers")
 contacts = frames.select("customers_contacts")
 
-# 5) Beide als Parquet schreiben
+# 5) Beide schreiben — Parquet nach processed/ UND direkt als Katalogtabelle.
+#    getSink + setCatalogInfo (enableUpdateCatalog) legt processed.customers_root
+#    bzw. processed.customers_contacts an/aktualisiert sie — kein Crawler nötig.
 base = args["output_path"].rstrip("/") + "/"
-root.toDF().write.mode("overwrite").parquet(base + "customers_root/")
-contacts.toDF().write.mode("overwrite").parquet(base + "customers_contacts/")
+
+sink_root = glue_context.getSink(
+    path=base + "customers_root/",
+    connection_type="s3",
+    updateBehavior="UPDATE_IN_DATABASE",
+    partitionKeys=[],
+    enableUpdateCatalog=True,
+    transformation_ctx="sink_root",
+)
+sink_root.setCatalogInfo(catalogDatabase="processed", catalogTableName="customers_root")
+sink_root.setFormat("glueparquet")
+sink_root.writeFrame(root)
+
+sink_contacts = glue_context.getSink(
+    path=base + "customers_contacts/",
+    connection_type="s3",
+    updateBehavior="UPDATE_IN_DATABASE",
+    partitionKeys=[],
+    enableUpdateCatalog=True,
+    transformation_ctx="sink_contacts",
+)
+sink_contacts.setCatalogInfo(catalogDatabase="processed", catalogTableName="customers_contacts")
+sink_contacts.setFormat("glueparquet")
+sink_contacts.writeFrame(contacts)
 print("root rows:", root.count(), "| contacts rows:", contacts.count())
 
 job.commit()

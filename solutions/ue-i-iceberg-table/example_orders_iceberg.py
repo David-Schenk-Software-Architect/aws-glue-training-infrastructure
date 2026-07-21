@@ -49,4 +49,10 @@ job.init(args["JOB_NAME"], args)
 
 # TODO 4: Zeilenzahl + Snapshots ins Log ausgeben (Beleg).
 
+# TODO 5: Compaction messbar machen. Reihenfolge:
+#   a) Datendateien zählen:  SELECT count(*) FROM glue_catalog.processed.orders_iceberg.files
+#   b) zusammenpacken:       CALL glue_catalog.system.rewrite_data_files(table => 'processed.orders_iceberg')
+#   c) erneut zählen — die Datei-Zahl sollte deutlich fallen.
+# Athena-Äquivalent: OPTIMIZE processed.orders_iceberg REWRITE DATA USING BIN_PACK.
+
 job.commit()

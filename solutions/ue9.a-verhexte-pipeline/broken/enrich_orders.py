@@ -18,6 +18,7 @@ Glue-Version: 5.0
 import sys
 
 from awsglue.context import GlueContext
+from awsglue.dynamicframe import DynamicFrame
 from awsglue.job import Job
 from awsglue.transforms import ApplyMapping
 from awsglue.utils import getResolvedOptions
@@ -53,7 +54,21 @@ cdf = customers.toDF().select("customer_id", "name", "loyalty_points")
 shipped = odf.filter(odf.status == "Shipped")
 
 enriched = shipped.join(cdf, on="customer_id", how="left")
-enriched.write.mode("overwrite").parquet(args["output_path"])
+
+# Schreiben über den Data Catalog: DynamicFrame + getSink schreibt Parquet nach
+# output_path und katalogisiert als processed.orders_enriched (enableUpdateCatalog).
+enriched_dyf = DynamicFrame.fromDF(enriched, glue_context, "enriched")
+sink = glue_context.getSink(
+    path=args["output_path"],
+    connection_type="s3",
+    updateBehavior="UPDATE_IN_DATABASE",
+    partitionKeys=[],
+    enableUpdateCatalog=True,
+    transformation_ctx="sink_enriched",
+)
+sink.setCatalogInfo(catalogDatabase="processed", catalogTableName="orders_enriched")
+sink.setFormat("glueparquet")
+sink.writeFrame(enriched_dyf)
 print("enriched rows:", enriched.count())
 
 job.commit()

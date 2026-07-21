@@ -52,7 +52,7 @@ Dazu ein **named Catalog** `glue_catalog`, der Spark SQL an den Glue Data Catalo
 - **Job:** im Skript über `SparkConf` **vor** dem `SparkContext` (siehe `solution_orders_iceberg.py`),
   dann bleibt außer `--datalake-formats` kein `--conf`-Parameter im Job-Setup.
 
-## Lösung — die drei SQL-Schritte
+## Lösung — die SQL-Schritte
 
 **1) Tabelle anlegen (+ Catalog-Registrierung in einem):**
 
@@ -92,6 +92,24 @@ DESCRIBE EXTENDED glue_catalog.processed.orders_iceberg;               -- Provid
 SELECT snapshot_id, operation
 FROM glue_catalog.processed.orders_iceberg.snapshots;                  -- 1 Snapshot (append)
 ```
+
+**4) Compaction — Small Files messbar zusammenpacken:**
+
+Der `INSERT` schreibt viele kleine Dateien (ein Task je Spark-Partition). Erst zählen,
+dann bin-pack, dann erneut zählen — die Datei-Zahl fällt sichtbar:
+
+```sql
+SELECT count(*) FROM glue_catalog.processed.orders_iceberg.files;      -- vorher: viele
+
+CALL glue_catalog.system.rewrite_data_files(table => 'processed.orders_iceberg');
+
+SELECT count(*) FROM glue_catalog.processed.orders_iceberg.files;      -- nachher: meist 1
+```
+
+`.files` ist die Iceberg-Metadaten-Tabelle (wie `.snapshots`). In **Athena** liefe dasselbe
+über `OPTIMIZE processed.orders_iceberg REWRITE DATA USING BIN_PACK` (dort heißt die
+Metadaten-Tabelle `…$files`, und der Tabellenname darf **nicht** gequotet sein). Spark kann
+über `strategy => 'sort'` zusätzlich sortieren; Athena nur bin-pack.
 
 ## Erwartetes Ergebnis
 
