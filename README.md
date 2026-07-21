@@ -12,7 +12,7 @@ from the caller's credentials / repo secrets at deploy time.
 
 | Resource | Purpose | Exercises |
 |---|---|---|
-| S3 bucket `gfu-glue-training-<account>` | `raw/ processed/ temp/ athena-results/ seed/` | all |
+| S3 bucket `gfu-glue-training-<account>` | `raw/ processed/ reporting/ temp/ athena-results/ seed/` | all |
 | Seed data | `raw/orders/orders.csv`, `raw/customers/customers.json`, `seed/orders_2.csv`, `raw/orders_bad/orders_bad.csv` | Ü3.1, Ü6.1, Ü8.1, Ü8.3 |
 | Reference artifacts | `solutions/**` staged to `scripts/examples/` (trainee-readable) and `scripts/solutions/` (trainee-hidden) | Ü4.1, Ü5.1, Ü6.1, Ü7.2, Ü8.1, Ü9.A |
 | Trainee workspaces | `scripts/<username>/{notebooks,scripts}/` per trainee (read+write) | all |
@@ -20,9 +20,9 @@ from the caller's credentials / repo secrets at deploy time.
 | IAM role `AWSGlueServiceRole-GfuGlueTraining` | crawlers, jobs, interactive sessions | Ü3.1–Ü8.x |
 | IAM role `StepFunctionsGlueExecutionRole-GfuGlueTraining` | Step Functions → Glue | Ü7.2 |
 | Athena workgroup `gfu-glue-training` | query-result location set | Ü3.1, Ü5.1 |
-| Glue Catalog DBs `raw`, `processed` | catalog targets | Ü3.1, Ü5.1 |
+| Glue Catalog DBs `raw`, `processed`, `reporting` | catalog targets; `reporting` is the Block-9 capstone target `daily_engagement_kpis` | Ü3.1, Ü5.1, Block 9 |
 | Glue Catalog table `raw.orders_bad` | pre-catalogued diagnose source (no crawler — the exercise starts at the diagnosis) | Ü8.3 |
-| KMS CMK *(optional, `enable_kms`, default off)* | Security Configuration | Ü8.2 |
+| KMS CMK *(`enable_kms`, default **on**, ~1 USD/month)* | Security Configuration; trainees get `kms:Decrypt` on it so they can verify the encrypted output/logs | Ü8.2 |
 | DynamoDB table *(optional, `enable_dynamodb`, default on)* | Block 9 second target | Block 9 |
 | IAM users (`trainee_usernames`, default 1) | attendee console + CLI logins (scoped S3, broad Glue/Athena) | all |
 
@@ -129,7 +129,7 @@ tofu apply                       # prefer letting CI apply; local apply shares t
 Optional toggles:
 
 ```bash
-tofu apply -var enable_kms=true        # add the CMK for Ü8.2 (~1 USD/month)
+tofu apply -var enable_kms=false       # drop the CMK for Ü8.2 (saves ~1 USD/month)
 tofu apply -var enable_dynamodb=false  # drop the Block 9 DynamoDB target
 ```
 
@@ -151,8 +151,8 @@ for deletion after a 7-day window.
 
 Effectively **zero standing cost**: S3 holds a few KB of seed data; Glue/Athena bill only
 per run/scan during the session; IAM, Catalog DBs and the Step Functions role are free;
-DynamoDB is on-demand. The only standing charge would be a KMS CMK (~1 USD/month) — hence
-`enable_kms` defaults to **off**.
+DynamoDB is on-demand. The one standing charge is the KMS CMK (~1 USD/month), on by
+default because Ü8.2 needs it — `enable_kms=false` drops it.
 
 ## Trainee access
 

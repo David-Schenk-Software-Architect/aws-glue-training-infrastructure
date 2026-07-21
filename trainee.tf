@@ -88,6 +88,7 @@ locals {
   trainee_rw_data_prefixes = [
     "raw/",
     "processed/",
+    "reporting/",
     "temp/",
     "athena-results/",
     "seed/",
@@ -175,4 +176,34 @@ resource "aws_iam_user_policy_attachment" "trainee_bucket" {
   for_each   = aws_iam_user.trainee
   user       = each.value.name
   policy_arn = aws_iam_policy.trainee_bucket.arn
+}
+
+# ── CMK access for Ü8.2 ──────────────────────────────────────────────────────
+# AWSGlueConsoleFullAccess brings kms:ListAliases + kms:DescribeKey, which is
+# enough to PICK the CMK when creating the Security Configuration — but not to
+# VERIFY the result afterwards: reading the SSE-KMS Parquet output in Athena and
+# opening the encrypted log group both call kms:Decrypt as the trainee identity,
+# and the key policy names only root, the Glue role and the Logs service. Without
+# this the exercise's last step ("prüfen, dass alles verschlüsselt ist") fails
+# with AccessDenied on the trainee, not on Glue.
+data "aws_iam_policy_document" "trainee_kms" {
+  count = var.enable_kms ? 1 : 0
+
+  statement {
+    sid = "TraineeCmkUse"
+    actions = [
+      "kms:Decrypt",
+      "kms:Encrypt",
+      "kms:GenerateDataKey",
+      "kms:DescribeKey",
+    ]
+    resources = [aws_kms_key.glue[0].arn]
+  }
+}
+
+resource "aws_iam_user_policy" "trainee_kms" {
+  for_each = var.enable_kms ? aws_iam_user.trainee : {}
+  name     = "gfu-trainee-kms"
+  user     = each.value.name
+  policy   = data.aws_iam_policy_document.trainee_kms[0].json
 }

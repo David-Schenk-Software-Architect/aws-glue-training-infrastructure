@@ -34,6 +34,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "lake" {
 resource "aws_s3_object" "prefixes" {
   for_each = toset([
     "processed/",
+    "reporting/",
     "temp/",
     "athena-results/",
   ])

@@ -11,9 +11,9 @@ variable "region" {
 }
 
 variable "enable_kms" {
-  description = "Create a symmetric KMS CMK for optional Exercise 8.2 (SSE-KMS/CSE-KMS). A CMK costs ~1 USD/month, so off by default."
+  description = "Create a symmetric KMS CMK for Exercise 8.2 (SSE-KMS/CSE-KMS). Costs ~1 USD/month; on by default so Ü8.2 is runnable, set to false to drop the only standing charge."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "enable_dynamodb" {

@@ -1,6 +1,7 @@
 # ── Glue Data Catalog databases ──────────────────────────────────────────────
 # `raw` receives the crawler-catalogued orders/customers tables (Ü3.1/Ü6.1);
-# `processed` receives the Parquet output of the ETL job (Ü5.1). Pre-created so
+# `processed` receives the Parquet output of the ETL job (Ü5.1); `reporting`
+# receives the Block-9 capstone target `daily_engagement_kpis`. Pre-created so
 # the exercises can point straight at them.
 
 resource "aws_glue_catalog_database" "raw" {
@@ -11,6 +12,11 @@ resource "aws_glue_catalog_database" "raw" {
 resource "aws_glue_catalog_database" "processed" {
   name        = "processed"
   description = "GFU Glue training – processed Parquet output tables."
+}
+
+resource "aws_glue_catalog_database" "reporting" {
+  name        = "reporting"
+  description = "GFU Glue training – Block 9 capstone target (daily_engagement_kpis)."
 }
 
 # ── Ü8.3 source table (pre-catalogued on purpose) ────────────────────────────
