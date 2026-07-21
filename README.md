@@ -16,7 +16,7 @@ from the caller's credentials / repo secrets at deploy time.
 | Seed data | `raw/orders/orders.csv`, `raw/customers/customers.json`, `seed/orders_2.csv` | Ü3.1, Ü6.1, Ü8.1 |
 | Reference artifacts | `solutions/**` staged to `scripts/examples/` (trainee-readable) and `scripts/solutions/` (trainee-hidden) | Ü4.1, Ü5.1, Ü6.1, Ü7.2, Ü8.1, Ü9.A |
 | Trainee workspaces | `scripts/<username>/{notebooks,scripts}/` per trainee (read+write) | all |
-| Reference Glue jobs + state machine *(`enable_reference_jobs`, default on)* | `ref-…-solution` jobs + `ref-orders-pipeline-solution` state machine | Ü5.1, Ü7.2, Ü8.1, Ü9.A |
+| Reference jobs + state machine + Glue Workflow *(`enable_reference_jobs`, default off)* | `ref-…-solution` jobs, `ref-orders-pipeline-solution` state machine, `ref-orders-workflow-solution` workflow | Ü5.1, Ü7.2, Ü7.7, Ü8.1, Ü9.A |
 | IAM role `AWSGlueServiceRole-GfuGlueTraining` | crawlers, jobs, interactive sessions | Ü3.1–Ü8.x |
 | IAM role `StepFunctionsGlueExecutionRole-GfuGlueTraining` | Step Functions → Glue | Ü7.2 |
 | Athena workgroup `gfu-glue-training` | query-result location set | Ü3.1, Ü5.1 |
@@ -50,12 +50,15 @@ all trainees can see all workspaces). Trainee S3 access is scoped (no `AmazonS3F
 to the data prefixes + examples + trainee workspaces; Glue/Athena/Step-Functions access
 stays broad.
 
-**`enable_reference_jobs`** (default **on**) registers the solution scripts as runnable
-Glue jobs (`ref-…-solution`) and the solution ASL as a state machine
+**`enable_reference_jobs`** (default **off**) registers the solution scripts as runnable
+Glue jobs (`ref-…-solution`), the solution ASL as a state machine
 (`ref-orders-pipeline-solution`, whose `JobName` targets the `ref-…` job, not the
-live-built `orders-s3-to-parquet`). While on, those jobs are visible in every trainee's
-Glue console — set it to `false` to keep the reference jobs out of the sandbox during
-teaching (esp. the Ü9.A challenge).
+live-built `orders-s3-to-parquet`), and the reference Glue Workflow
+(`ref-orders-workflow-solution`: ON_DEMAND trigger → crawler(raw) → `ref-…` job →
+crawler(processed), the runnable counterpart to the Terraform slide 7.4b). Off by default
+because these pre-empt the live-built exercises — the trainee builds the Ü7.2 state
+machine and the Ü7.7 workflow from scratch, and when enabled the reference resources are
+visible in every trainee's Glue console. Flip to `true` only to hand out live references.
 
 ## Deployment (CI/CD)
 

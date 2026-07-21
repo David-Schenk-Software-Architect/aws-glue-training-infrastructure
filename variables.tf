@@ -29,7 +29,7 @@ variable "trainee_usernames" {
 }
 
 variable "enable_reference_jobs" {
-  description = "Register the SOLUTION scripts as real Glue jobs and the solution ASL as a Step Functions state machine (instructor reference deployment). ON by default. Reference resources use 'ref-…-solution' names to avoid colliding with the trainee-built 'orders-s3-to-parquet'. NOTE: the ref Glue jobs are visible in every trainee's Glue console (AWSGlueConsoleFullAccess) — accepted trade-off, not hidden via IAM. Set to false to keep them out of the sandbox during teaching."
+  description = "Register the SOLUTION scripts as real Glue jobs, the solution ASL as a Step Functions state machine, and the reference Glue Workflow for Ü7.7 (instructor reference deployment). OFF by default so the reference resources do not pre-empt the live-built exercises (Ü7.2 state machine, Ü7.7 workflow) — the trainee builds those from scratch. Reference resources use 'ref-…-solution' names to avoid colliding with the trainee-built 'orders-s3-to-parquet'. NOTE: when enabled, the ref resources are visible in every trainee's Glue console (AWSGlueConsoleFullAccess) — not hidden via IAM. Flip to true only to hand out live references."
   type        = bool
-  default     = true
+  default     = false
 }

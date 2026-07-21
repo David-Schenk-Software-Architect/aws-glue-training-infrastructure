@@ -36,6 +36,11 @@ output "reference_state_machine_arn" {
   value       = var.enable_reference_jobs ? aws_sfn_state_machine.reference[0].arn : null
 }
 
+output "reference_workflow_name" {
+  description = "Reference Glue Workflow name for Ü7.7 (null unless enable_reference_jobs = true). Start: aws glue start-workflow-run --name <this>."
+  value       = var.enable_reference_jobs ? aws_glue_workflow.reference[0].name : null
+}
+
 output "athena_workgroup" {
   description = "Athena workgroup name."
   value       = aws_athena_workgroup.training.name
