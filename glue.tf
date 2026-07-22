@@ -5,18 +5,21 @@
 # the exercises can point straight at them.
 
 resource "aws_glue_catalog_database" "raw" {
-  name        = "raw"
-  description = "GFU Glue training – raw source tables (orders, customers)."
+  name         = "raw"
+  description  = "GFU Glue training – raw source tables (orders, customers)."
+  location_uri = "s3://${aws_s3_bucket.lake.bucket}/raw/"
 }
 
 resource "aws_glue_catalog_database" "processed" {
-  name        = "processed"
-  description = "GFU Glue training – processed Parquet output tables."
+  name         = "processed"
+  description  = "GFU Glue training – processed Parquet output tables."
+  location_uri = "s3://${aws_s3_bucket.lake.bucket}/processed/"
 }
 
 resource "aws_glue_catalog_database" "reporting" {
-  name        = "reporting"
-  description = "GFU Glue training – Block 9 capstone target (daily_engagement_kpis)."
+  name         = "reporting"
+  description  = "GFU Glue training – Block 9 capstone target (daily_engagement_kpis)."
+  location_uri = "s3://${aws_s3_bucket.lake.bucket}/reporting/"
 }
 
 # ── Ü8.3 source table (pre-catalogued on purpose) ────────────────────────────
